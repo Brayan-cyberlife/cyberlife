@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Panel · Cyber Life{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Panel de control</h1>
+    <div class="page-subtitle">Estado general del inventario de activos TI</div>
+  </div>
+  <a href="{{ url_for('new_asset') }}" class="btn">＋ Agregar activo</a>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-label"><span class="led led-none"></span> Total de activos</div>
+    <div class="card-value">{{ total }}</div>
+  </div>
+  <div class="card">
+    <div class="card-label"><span class="led led-ok"></span> Al día</div>
+    <div class="card-value ok">{{ ok_count }}</div>
+  </div>
+  <div class="card">
+    <div class="card-label"><span class="led led-warn"></span> Por vencer (30 días)</div>
+    <div class="card-value warn">{{ warning_count }}</div>
+  </div>
+  <div class="card">
+    <div class="card-label"><span class="led led-danger"></span> Vencidos</div>
+    <div class="card-value danger">{{ expired_count }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2 class="panel-title">Próximos vencimientos</h2>
+  {% if upcoming %}
+    {% for a in upcoming %}
+      <div class="upcoming-row">
+        <span class="led {{ 'led-danger' if a.health() == 'danger' else 'led-warn' }}"></span>
+        <div class="upcoming-name">
+          {{ a.name }}
+          <div class="upcoming-meta">{{ a.category }} · {{ a.assigned_to or "Sin asignar" }}</div>
+        </div>
+        {% if a.health() == 'danger' %}
+          <span class="pill danger">Vencido hace {{ -a.days_to_expire() }} días</span>
+        {% else %}
+          <span class="pill warn">Vence en {{ a.days_to_expire() }} días</span>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <span class="mono">✓</span>
+      No hay vencimientos próximos. Todo en orden.
+    </div>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <h2 class="panel-title">Activos por categoría</h2>
+  {% if by_category %}
+    {% for cat, count in by_category.items() %}
+      <div class="cat-row">
+        <div class="cat-name">{{ cat }}</div>
+        <div class="cat-bar-track">
+          <div class="cat-bar-fill" style="width: {{ (count / total * 100) if total else 0 }}%"></div>
+        </div>
+        <div class="cat-count">{{ count }}</div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state"><span class="mono">—</span>Aún no hay activos registrados.</div>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <h2 class="panel-title">Valor total del inventario</h2>
+  <div class="card-value" style="font-size:28px;">
+    ${{ "{:,.0f}".format(total_cost).replace(",", ".") }}
+  </div>
+</div>
+
+{% endblock %}

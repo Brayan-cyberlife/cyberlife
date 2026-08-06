@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Activos · Cyber Life{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Activos</h1>
+    <div class="page-subtitle">{{ assets|length }} resultado(s)</div>
+  </div>
+  <a href="{{ url_for('new_asset') }}" class="btn">＋ Agregar activo</a>
+</div>
+
+<form class="toolbar" method="get">
+  <input type="text" name="q" placeholder="Buscar por nombre, proveedor, responsable, N° serie..." value="{{ filters.q }}" style="min-width:280px;">
+  <select name="category">
+    <option value="">Todas las categorías</option>
+    {% for c in categories %}
+      <option value="{{ c }}" {{ 'selected' if filters.category == c }}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <select name="status">
+    <option value="">Todos los estados</option>
+    {% for s in statuses %}
+      <option value="{{ s }}" {{ 'selected' if filters.status == s }}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-ghost" type="submit">Filtrar</button>
+  <a href="{{ url_for('list_assets') }}" class="btn btn-ghost">Limpiar</a>
+</form>
+
+{% if assets %}
+<table>
+  <thead>
+    <tr>
+      <th></th>
+      <th>Nombre</th>
+      <th>Categoría</th>
+      <th>Responsable</th>
+      <th>Vencimiento</th>
+      <th>Estado</th>
+      <th>Costo</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in assets %}
+    <tr>
+      <td>
+        <span class="led led-{{ a.health() }}"></span>
+      </td>
+      <td>
+        <strong>{{ a.name }}</strong>
+        {% if a.serial_number %}<div class="upcoming-meta">{{ a.serial_number }}</div>{% endif %}
+      </td>
+      <td>{{ a.category }}</td>
+      <td>{{ a.assigned_to or "—" }}</td>
+      <td>
+        {% if a.expiration_date %}
+          {{ a.expiration_date.strftime("%d-%m-%Y") }}
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td class="status-cell">{{ a.status }}</td>
+      <td>${{ "{:,.0f}".format(a.cost or 0).replace(",", ".") }}</td>
+      <td>
+        <div class="row-actions">
+          <a href="{{ url_for('edit_asset', asset_id=a.id) }}">Editar</a>
+          <form method="post" action="{{ url_for('delete_asset', asset_id=a.id) }}" onsubmit="return confirm('¿Eliminar {{ a.name }}?');" style="display:inline;">
+            <button type="submit">Eliminar</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+  <span class="mono">∅</span>
+  No se encontraron activos con estos filtros.
+</div>
+{% endif %}
+
+{% endblock %}

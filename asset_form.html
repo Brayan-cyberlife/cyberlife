@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if asset else 'Nuevo' }} activo · Cyber Life{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ 'Editar activo' if asset else 'Agregar activo' }}</h1>
+    <div class="page-subtitle">Completa los datos del equipo, licencia o servicio</div>
+  </div>
+</div>
+
+<form class="panel" method="post">
+  <div class="form-grid">
+    <div class="field full">
+      <label>Nombre del activo</label>
+      <input type="text" name="name" required value="{{ asset.name if asset else '' }}" placeholder="Ej: Laptop Dell Latitude 5440">
+    </div>
+
+    <div class="field">
+      <label>Categoría</label>
+      <select name="category">
+        {% for c in categories %}
+          <option value="{{ c }}" {{ 'selected' if asset and asset.category == c }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Estado</label>
+      <select name="status">
+        {% for s in statuses %}
+          <option value="{{ s }}" {{ 'selected' if asset and asset.status == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Proveedor</label>
+      <input type="text" name="vendor" value="{{ asset.vendor if asset else '' }}" placeholder="Ej: Dell, Microsoft, Fortinet">
+    </div>
+
+    <div class="field">
+      <label>Asignado a</label>
+      <input type="text" name="assigned_to" value="{{ asset.assigned_to if asset else '' }}" placeholder="Ej: Marcela Rojas">
+    </div>
+
+    <div class="field">
+      <label>N° de serie / licencia</label>
+      <input type="text" name="serial_number" value="{{ asset.serial_number if asset else '' }}">
+    </div>
+
+    <div class="field">
+      <label>Costo</label>
+      <input type="number" step="1" name="cost" value="{{ asset.cost if asset else '' }}" placeholder="0">
+    </div>
+
+    <div class="field">
+      <label>Fecha de compra</label>
+      <input type="date" name="purchase_date" value="{{ asset.purchase_date.isoformat() if asset and asset.purchase_date else '' }}">
+    </div>
+
+    <div class="field">
+      <label>Fecha de vencimiento (garantía / licencia)</label>
+      <input type="date" name="expiration_date" value="{{ asset.expiration_date.isoformat() if asset and asset.expiration_date else '' }}">
+    </div>
+
+    <div class="field full">
+      <label>Notas</label>
+      <textarea name="notes" rows="3">{{ asset.notes if asset else '' }}</textarea>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn">{{ 'Guardar cambios' if asset else 'Agregar activo' }}</button>
+    <a href="{{ url_for('list_assets') }}" class="btn btn-ghost">Cancelar</a>
+  </div>
+</form>
+
+{% endblock %}

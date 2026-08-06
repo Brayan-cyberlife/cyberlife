@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Cyber Life{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Cyber Life" class="brand-logo">
+      <div class="brand-text">
+        <span class="brand-name">CYBER LIFE</span>
+        <span class="brand-tagline">Asset Manager</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
+        <span class="nav-ico">◧</span> Panel
+      </a>
+      <a href="{{ url_for('list_assets') }}" class="{{ 'active' if request.endpoint in ['list_assets','edit_asset'] }}">
+        <span class="nav-ico">▤</span> Activos
+      </a>
+      <a href="{{ url_for('new_asset') }}" class="{{ 'active' if request.endpoint == 'new_asset' }}">
+        <span class="nav-ico">＋</span> Agregar activo
+      </a>
+      <a href="{{ url_for('export_csv') }}">
+        <span class="nav-ico">↓</span> Exportar CSV
+      </a>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="mono" style="color:var(--text);margin-bottom:2px;">{{ current_user.company.name }}</div>
+      <div class="mono" style="margin-bottom:10px;">{{ current_user.name }}</div>
+      <a href="{{ url_for('logout') }}" class="mono" style="color:var(--text-dim);">⎋ Cerrar sesión</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>
