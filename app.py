@@ -8,7 +8,7 @@ from flask_login import (
 )
 from models import db, Company, User, Asset, CATEGORIES, STATUSES
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="/static")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///inventory.db"
 app.config["SECRET_KEY"] = "cambia-esta-clave-en-produccion"
 db.init_app(app)
