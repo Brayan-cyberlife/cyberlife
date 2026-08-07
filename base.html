@@ -31,6 +31,11 @@
       <a href="{{ url_for('export_csv') }}">
         <span class="nav-ico">↓</span> Exportar CSV
       </a>
+      {% if current_user.is_authenticated and current_user.is_super_admin %}
+      <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint == 'admin_dashboard' }}">
+        <span class="nav-ico">⚙</span> Administrador
+      </a>
+      {% endif %}
     </nav>
     <div class="sidebar-foot">
       <div class="mono" style="color:var(--text);margin-bottom:2px;">{{ current_user.company.name }}</div>

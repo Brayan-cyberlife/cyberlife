@@ -1,8 +1,11 @@
 import csv
 import io
+import os
+from functools import wraps
 from datetime import datetime, date
 
-from flask import Flask, render_template, request, redirect, url_for, flash, Response
+import click
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, abort
 from flask_login import (
     LoginManager, login_user, logout_user, login_required, current_user
 )
@@ -11,6 +14,9 @@ from models import db, Company, User, Asset, CATEGORIES, STATUSES
 app = Flask(__name__, template_folder=".", static_folder=".", static_url_path="/static")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///inventory.db"
 app.config["SECRET_KEY"] = "cambia-esta-clave-en-produccion"
+# El correo que pongas en esta variable de entorno queda marcado como superadmin
+# automáticamente al registrarse. Configúrala en Render (Environment) con tu email.
+app.config["OWNER_EMAIL"] = os.environ.get("OWNER_EMAIL", "").strip().lower()
 db.init_app(app)
 
 login_manager = LoginManager(app)
@@ -33,6 +39,16 @@ def parse_date(value):
 def assets_query():
     """Todas las consultas de activos quedan acotadas a la empresa del usuario logueado."""
     return Asset.query.filter_by(company_id=current_user.company_id)
+
+
+def admin_required(view_func):
+    """Solo deja pasar al superadmin (vos). El resto recibe 403."""
+    @wraps(view_func)
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_super_admin:
+            abort(403)
+        return view_func(*args, **kwargs)
+    return wrapped
 
 
 # ---------- Autenticación ----------
@@ -58,6 +74,8 @@ def register():
 
         user = User(company_id=company.id, name=name, email=email, role="admin")
         user.set_password(password)
+        if app.config["OWNER_EMAIL"] and email == app.config["OWNER_EMAIL"]:
+            user.is_super_admin = True
         db.session.add(user)
         db.session.commit()
 
@@ -81,6 +99,9 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if user and user.check_password(password):
+            if not user.is_super_admin and user.company and not user.company.is_active:
+                flash("Esta cuenta está desactivada. Contacta al administrador.", "danger")
+                return render_template("login.html")
             login_user(user)
             return redirect(url_for("dashboard"))
 
@@ -240,6 +261,67 @@ def export_csv():
     )
 
 
+# ---------- Panel de administrador (superadmin) ----------
+
+@app.route("/admin")
+@login_required
+@admin_required
+def admin_dashboard():
+    companies = Company.query.order_by(Company.created_at.desc()).all()
+    rows = []
+    for c in companies:
+        rows.append({
+            "company": c,
+            "user_count": len(c.users),
+            "asset_count": len(c.assets),
+            "total_value": sum(a.cost or 0 for a in c.assets),
+        })
+    return render_template(
+        "admin_dashboard.html",
+        rows=rows,
+        total_companies=len(companies),
+        total_users=sum(r["user_count"] for r in rows),
+        total_assets=sum(r["asset_count"] for r in rows),
+    )
+
+
+@app.route("/admin/company/<int:company_id>/toggle", methods=["POST"])
+@login_required
+@admin_required
+def toggle_company(company_id):
+    company = Company.query.get_or_404(company_id)
+    company.is_active = not company.is_active
+    db.session.commit()
+    estado = "activada" if company.is_active else "desactivada"
+    flash(f'Empresa "{company.name}" {estado}.', "info")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/company/<int:company_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_company(company_id):
+    company = Company.query.get_or_404(company_id)
+    nombre = company.name
+    db.session.delete(company)
+    db.session.commit()
+    flash(f'Empresa "{nombre}" eliminada junto con todos sus datos.', "info")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.cli.command("make-admin")
+@click.argument("email")
+def make_admin(email):
+    """Uso: flask make-admin correo@ejemplo.com — marca ese usuario como superadmin."""
+    user = User.query.filter_by(email=email.strip().lower()).first()
+    if not user:
+        click.echo(f"No existe ningún usuario con el correo {email}.")
+        return
+    user.is_super_admin = True
+    db.session.commit()
+    click.echo(f"{email} ahora es superadmin.")
+
+
 def seed_demo_data(company_id):
     """Carga datos de ejemplo para una empresa recién creada."""
     from datetime import timedelta
@@ -279,6 +361,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)
