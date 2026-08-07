@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Panel de administrador · Cyber Life{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <p class="page-title">Panel de administrador</p>
+    <p class="page-subtitle">Vista global de todas las empresas registradas en Cyber Life</p>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-label"><span class="led led-none"></span>Empresas</div>
+    <div class="card-value">{{ total_companies }}</div>
+  </div>
+  <div class="card">
+    <div class="card-label"><span class="led led-ok"></span>Usuarios totales</div>
+    <div class="card-value ok">{{ total_users }}</div>
+  </div>
+  <div class="card">
+    <div class="card-label"><span class="led led-none"></span>Activos totales</div>
+    <div class="card-value">{{ total_assets }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <p class="panel-title">Empresas registradas</p>
+  {% if rows %}
+  <table>
+    <thead>
+      <tr>
+        <th>Empresa</th>
+        <th>Registrada</th>
+        <th>Usuarios</th>
+        <th>Activos</th>
+        <th>Valor inventario</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.company.name }}</td>
+        <td>{{ row.company.created_at }}</td>
+        <td>{{ row.user_count }}</td>
+        <td>{{ row.asset_count }}</td>
+        <td>${{ "{:,.0f}".format(row.total_value) }}</td>
+        <td class="status-cell">
+          {% if row.company.is_active %}
+            <span class="pill ok">Activa</span>
+          {% else %}
+            <span class="pill danger">Desactivada</span>
+          {% endif %}
+        </td>
+        <td class="row-actions">
+          <form action="{{ url_for('toggle_company', company_id=row.company.id) }}" method="post" style="display:inline;">
+            <button type="submit">{{ 'Desactivar' if row.company.is_active else 'Activar' }}</button>
+          </form>
+          <form action="{{ url_for('delete_company', company_id=row.company.id) }}" method="post" style="display:inline;"
+                onsubmit="return confirm('¿Eliminar {{ row.company.name }} y todos sus datos? Esta acción no se puede deshacer.');">
+            <button type="submit" class="btn-danger" style="border:1px solid var(--danger);">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <span class="mono">—</span>
+    Todavía no hay empresas registradas.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
