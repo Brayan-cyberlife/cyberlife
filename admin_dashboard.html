@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+
 {% block title %}Panel de administrador · Cyber Life{% endblock %}
+
 {% block content %}
 <div class="page-header">
   <div>
     <p class="page-title">Panel de administrador</p>
     <p class="page-subtitle">Vista global de todas las empresas registradas en Cyber Life</p>
   </div>
-  <!-- BOTÓN AGREGADO: Registrar Nueva Empresa usando tu clase .btn nativa -->
   <div>
     <a href="{{ url_for('create_company') }}" class="btn">
       <span class="mono">+</span> Registrar Empresa
@@ -17,31 +18,30 @@
 <div class="cards">
   <div class="card">
     <div class="card-label"><span class="led led-none"></span>Empresas</div>
-    <div class="card-value">{{ total_companies }}</div>
+    <div class="card-value">{{ total_companies or 0 }}</div>
   </div>
   <div class="card">
     <div class="card-label"><span class="led led-ok"></span>Usuarios totales</div>
-    <div class="card-value ok">{{ total_users }}</div>
+    <div class="card-value ok">{{ total_users or 0 }}</div>
   </div>
   <div class="card">
     <div class="card-label"><span class="led led-none"></span>Activos totales</div>
-    <div class="card-value">{{ total_assets }}</div>
+    <div class="card-value">{{ total_assets or 0 }}</div>
   </div>
 </div>
 
-<!-- COMPONENTE AGREGADO: Barra de herramientas con buscador y filtros por estado -->
 <div class="toolbar">
   <form method="GET" action="{{ url_for('admin_dashboard') }}" style="display: flex; gap: 10px; width: 100%; flex-wrap: wrap;">
-    <input type="text" name="search" placeholder="Buscar por nombre de empresa..." value="{{ request.args.get('search', '') }}" style="flex: 1; min-width: 200px;">
+    <input type="text" name="search" placeholder="Buscar por nombre de empresa..." value="{{ request.args.get('search', '') if request else '' }}" style="flex: 1; min-width: 200px;">
     
     <select name="status">
       <option value="">Todos los estados</option>
-      <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>Activas</option>
-      <option value="inactive" {% if request.args.get('status') == 'inactive' %}selected{% endif %}>Desactivadas</option>
+      <option value="active" {% if request and request.args.get('status') == 'active' %}selected{% endif %}>Activas</option>
+      <option value="inactive" {% if request and request.args.get('status') == 'inactive' %}selected{% endif %}>Desactivadas</option>
     </select>
 
     <button type="submit" class="btn btn-ghost">Filtrar</button>
-    {% if request.args.get('search') or request.args.get('status') %}
+    {% if request and (request.args.get('search') or request.args.get('status')) %}
       <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost" style="color: var(--danger); border-color: var(--danger);">Limpiar</a>
     {% endif %}
   </form>
@@ -69,7 +69,7 @@
         <td>{{ row.company.created_at }}</td>
         <td>{{ row.user_count }}</td>
         <td>{{ row.asset_count }}</td>
-        <td>${{ "{:,.0f}".format(row.total_value) }}</td>
+        <td>${{ "{:,.0f}".format(row.total_value or 0) }}</td>
         <td class="status-cell">
           {% if row.company.is_active %}
             <span class="pill ok">Activa</span>
