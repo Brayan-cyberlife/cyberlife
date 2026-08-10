@@ -296,31 +296,4 @@ def admin_dashboard():
         "admin_dashboard.html",
         rows=rows,
 
-{% extends "base.html" %}
-
-{% block title %}Registrar Empresa · Cyber Life{% endblock %}
-
-{% block content %}
-<div class="page-header">
-  <div>
-    <p class="page-title">Registrar Nueva Empresa</p>
-    <p class="page-subtitle">Agrega una nueva entidad al sistema de inventario</p>
-  </div>
-</div>
-
-<div class="panel" style="max-width: 600px; margin: 0 auto;">
-  <form method="POST" action="{{ url_for('create_company') }}" style="display: flex; flex-direction: column; gap: 20px;">
-    
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <label for="company_name" style="font-weight: bold;">Nombre de la Empresa</label>
-      <input type="text" id="company_name" name="company_name" placeholder="Ej. Cyber Life Corp" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-    </div>
-
-    <div style="display: flex; gap: 10px; justify-content: flex-end;">
-      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost" style="text-decoration: none; display: flex; align-items: center;">Cancelar</a>
-      <button type="submit" class="btn">Guardar Empresa</button>
-    </div>
-
-  </form>
-</div>
-{% endblock %}
+        )
