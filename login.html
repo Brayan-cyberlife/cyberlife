@@ -7,108 +7,56 @@
 <link rel="preconnect" href="https://googleapis.com">
 <link href="https://googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<style>
-  /* Fondo oscuro con rejilla de líneas de neón verde */
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    margin: 0;
-    background-color: #0a0f0d;
-    background-image: 
-      linear-gradient(to right, rgba(0, 255, 102, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 255, 102, 0.1) 1px, transparent 1px);
-    background-size: 40px 40px;
-    position: relative;
-  }
-
-  /* Líneas decorativas de neón brillante en el fondo */
-  body::before, body::after {
-    content: "";
-    position: absolute;
-    background: #00ff66;
-    filter: drop-shadow(0 0 12px #00ff66) drop-shadow(0 0 25px #00ff66);
-    pointer-events: none;
-    opacity: 0.6;
-  }
-  /* Línea vertical izquierda */
-  body::before {
-    top: 0;
-    left: 15%;
-    width: 2px;
-    height: 100%;
-  }
-  /* Línea horizontal superior */
-  body::after {
-    top: 25%;
-    left: 0;
-    width: 100%;
-    height: 2px;
-  }
-
-  /* Caja de autenticación con sutil reflejo verde */
-  .auth-box {
-    width: 100%;
-    max-width: 380px;
-    padding: 30px;
-    background: rgba(10, 15, 13, 0.85);
-    border: 1px solid rgba(0, 255, 102, 0.2);
-    border-radius: 12px;
-    box-shadow: 0 0 30px rgba(0, 255, 102, 0.05);
-    backdrop-filter: blur(8px);
-    z-index: 10;
-  }
-
-  .auth-brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px;}
-  .auth-brand img{width:40px;height:40px;border-radius:50%;box-shadow:0 0 14px var(--primary-dim);}
-  .auth-brand span{font-family:var(--font-display);font-weight:700;font-size:17px;}
-  .auth-title{font-family:var(--font-display);font-size:19px;font-weight:600;margin-bottom:6px;text-align:center;}
-  .auth-sub{color:var(--text-dim);font-size:13px;text-align:center;margin-bottom:26px;}
-  .auth-field{margin-bottom:14px;}
-  .auth-field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;}
-  .auth-field input{width:100%;}
-  .auth-submit{width:100%;justify-content:center;margin-top:8px;}
-  .auth-foot{text-align:center;margin-top:20px;font-size:13px;color:var(--text-dim);}
-  .auth-foot a{color:var(--primary);}
-</style>
 </head>
-<body>
-<div class="auth-box">
-  <div class="auth-brand">
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="Cyber Life">
-    <span>CYBER LIFE</span>
-  </div>
-  <div class="auth-title">Ingresa a tu panel</div>
-  <div class="auth-sub">Gestión de activos TI</div>
+<!-- 1. Asegúrate de incluir la clase 'auth-page' en el body para activar el neón -->
+<body class="auth-page">
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-stack">
-        {% for category, message in messages %}
-          <div class="flash flash-{{ category }}">{{ message }}</div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
-  <form action="{{ url_for('login') }}" method="POST">
-    <div class="auth-field">
-      <label for="username">Usuario</label>
-      <input type="text" id="username" name="username" required>
+<!-- 2. AGREGADO: Este contenedor centra la tarjeta y le da la escala correcta en pantalla -->
+<div class="auth-container">
+  
+  <div class="auth-box">
+    <div class="auth-brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Cyber Life">
+      <span>CYBER LIFE</span>
     </div>
     
-    <div class="auth-field">
-      <label for="password">Contraseña</label>
-      <input type="password" id="password" name="password" required>
+    <div class="auth-title">Ingresa a tu panel</div>
+    <div class="auth-sub">Gestión de activos TI</div>
+
+    <!-- Sección de mensajes Flash (Errores) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <!-- Cambiado a flash-danger automáticamente para combinar con tu CSS de borde rojo -->
+            <div class="flash flash-danger">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('login') }}" method="POST">
+      <div class="auth-field">
+        <label for="username">Usuario</label>
+        <input type="text" id="username" name="username" required autocomplete="username">
+      </div>
+      
+      <div class="auth-field">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+
+      <!-- Usando tu botón verde nativo .btn -->
+      <button type="submit" class="btn auth-submit">Ingresar</button>
+    </form>
+
+    <div class="auth-foot">
+      ¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate</a>
     </div>
-
-    <button type="submit" class="auth-submit">Ingresar</button>
-  </form>
-
-  <div class="auth-foot">
-    ¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate</a>
   </div>
-</div>
+
+</div> <!-- Fin de auth-container -->
+
 </body>
 </html>
+
