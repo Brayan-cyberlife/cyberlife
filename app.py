@@ -267,7 +267,22 @@ def export_csv():
 @login_required
 @admin_required
 def admin_dashboard():
-    companies = Company.query.order_by(Company.created_at.desc()).all()
+    # Capturar parámetros de filtrado desde el HTML
+    search_query = request.args.get("search", "").strip()
+    status_filter = request.args.get("status", "")
+
+    companies_query = Company.query
+
+    if search_query:
+        companies_query = companies_query.filter(Company.name.ilike(f"%{search_query}%"))
+    
+    if status_filter == "active":
+        companies_query = companies_query.filter(Company.is_active == True)
+    elif status_filter == "inactive":
+        companies_query = companies_query.filter(Company.is_active == False)
+
+    companies = companies_query.order_by(Company.created_at.desc()).all()
+    
     rows = []
     for c in companies:
         rows.append({
@@ -276,90 +291,36 @@ def admin_dashboard():
             "asset_count": len(c.assets),
             "total_value": sum(a.cost or 0 for a in c.assets),
         })
+        
     return render_template(
         "admin_dashboard.html",
         rows=rows,
-        total_companies=len(companies),
-        total_users=sum(r["user_count"] for r in rows),
-        total_assets=sum(r["asset_count"] for r in rows),
-    )
 
+{% extends "base.html" %}
 
-@app.route("/admin/company/<int:company_id>/toggle", methods=["POST"])
-@login_required
-@admin_required
-def toggle_company(company_id):
-    company = Company.query.get_or_404(company_id)
-    company.is_active = not company.is_active
-    db.session.commit()
-    estado = "activada" if company.is_active else "desactivada"
-    flash(f'Empresa "{company.name}" {estado}.', "info")
-    return redirect(url_for("admin_dashboard"))
+{% block title %}Registrar Empresa · Cyber Life{% endblock %}
 
+{% block content %}
+<div class="page-header">
+  <div>
+    <p class="page-title">Registrar Nueva Empresa</p>
+    <p class="page-subtitle">Agrega una nueva entidad al sistema de inventario</p>
+  </div>
+</div>
 
-@app.route("/admin/company/<int:company_id>/delete", methods=["POST"])
-@login_required
-@admin_required
-def delete_company(company_id):
-    company = Company.query.get_or_404(company_id)
-    nombre = company.name
-    db.session.delete(company)
-    db.session.commit()
-    flash(f'Empresa "{nombre}" eliminada junto con todos sus datos.', "info")
-    return redirect(url_for("admin_dashboard"))
+<div class="panel" style="max-width: 600px; margin: 0 auto;">
+  <form method="POST" action="{{ url_for('create_company') }}" style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <label for="company_name" style="font-weight: bold;">Nombre de la Empresa</label>
+      <input type="text" id="company_name" name="company_name" placeholder="Ej. Cyber Life Corp" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+    </div>
 
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost" style="text-decoration: none; display: flex; align-items: center;">Cancelar</a>
+      <button type="submit" class="btn">Guardar Empresa</button>
+    </div>
 
-@app.cli.command("make-admin")
-@click.argument("email")
-def make_admin(email):
-    """Uso: flask make-admin correo@ejemplo.com — marca ese usuario como superadmin."""
-    user = User.query.filter_by(email=email.strip().lower()).first()
-    if not user:
-        click.echo(f"No existe ningún usuario con el correo {email}.")
-        return
-    user.is_super_admin = True
-    db.session.commit()
-    click.echo(f"{email} ahora es superadmin.")
-
-
-def seed_demo_data(company_id):
-    """Carga datos de ejemplo para una empresa recién creada."""
-    from datetime import timedelta
-    today = date.today()
-    demo = [
-        Asset(company_id=company_id, name="Laptop Dell Latitude 5440", category="Hardware", vendor="Dell",
-              assigned_to="Marcela Rojas", serial_number="DL5440-0091",
-              purchase_date=today - timedelta(days=400), expiration_date=today + timedelta(days=15),
-              cost=780000, status="Activo", notes="Garantía próxima a vencer."),
-        Asset(company_id=company_id, name="Licencia Microsoft 365 Business", category="Licencia", vendor="Microsoft",
-              assigned_to="Toda la oficina", serial_number="M365-2291",
-              purchase_date=today - timedelta(days=300), expiration_date=today + timedelta(days=6),
-              cost=1200000, status="Activo", notes="Renovación anual, 25 licencias."),
-        Asset(company_id=company_id, name="Firewall Fortinet 60F", category="Hardware", vendor="Fortinet",
-              assigned_to="Sala de servidores", serial_number="FTN60F-3321",
-              purchase_date=today - timedelta(days=900), expiration_date=today - timedelta(days=10),
-              cost=950000, status="Activo", notes="Soporte vencido, renovar urgente."),
-        Asset(company_id=company_id, name="Suscripción Adobe Creative Cloud", category="Servicio/Suscripción", vendor="Adobe",
-              assigned_to="Equipo de Marketing", serial_number="ADB-CC-11",
-              purchase_date=today - timedelta(days=200), expiration_date=today + timedelta(days=120),
-              cost=350000, status="Activo", notes=""),
-        Asset(company_id=company_id, name="Monitor LG 27' 4K", category="Hardware", vendor="LG",
-              assigned_to="Diego Fuentes", serial_number="LG27-4K-77",
-              purchase_date=today - timedelta(days=100), expiration_date=today + timedelta(days=600),
-              cost=210000, status="Activo", notes=""),
-        Asset(company_id=company_id, name="Antivirus ESET Endpoint", category="Licencia", vendor="ESET",
-              assigned_to="Todos los equipos", serial_number="ESET-EP-40",
-              purchase_date=today - timedelta(days=340), expiration_date=today + timedelta(days=25),
-              cost=480000, status="Activo", notes="40 endpoints."),
-    ]
-    db.session.bulk_save_objects(demo)
-    db.session.commit()
-
-
-with app.app_context():
-    db.create_all()
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)
+  </form>
+</div>
+{% endblock %}
