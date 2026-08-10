@@ -4,12 +4,62 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ingresar · Cyber Life</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://googleapis.com">
+<link href="https://googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <style>
-  body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
-  .auth-box{width:100%;max-width:380px;padding:0 20px;}
+  /* Fondo oscuro con rejilla de líneas de neón verde */
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #0a0f0d;
+    background-image: 
+      linear-gradient(to right, rgba(0, 255, 102, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 255, 102, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    position: relative;
+  }
+
+  /* Líneas decorativas de neón brillante en el fondo */
+  body::before, body::after {
+    content: "";
+    position: absolute;
+    background: #00ff66;
+    filter: drop-shadow(0 0 12px #00ff66) drop-shadow(0 0 25px #00ff66);
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  /* Línea vertical izquierda */
+  body::before {
+    top: 0;
+    left: 15%;
+    width: 2px;
+    height: 100%;
+  }
+  /* Línea horizontal superior */
+  body::after {
+    top: 25%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+  }
+
+  /* Caja de autenticación con sutil reflejo verde */
+  .auth-box {
+    width: 100%;
+    max-width: 380px;
+    padding: 30px;
+    background: rgba(10, 15, 13, 0.85);
+    border: 1px solid rgba(0, 255, 102, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0, 255, 102, 0.05);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+
   .auth-brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px;}
   .auth-brand img{width:40px;height:40px;border-radius:50%;box-shadow:0 0 14px var(--primary-dim);}
   .auth-brand span{font-family:var(--font-display);font-weight:700;font-size:17px;}
@@ -42,20 +92,22 @@
     {% endif %}
   {% endwith %}
 
-  <form method="post" class="panel">
+  <form action="{{ url_for('login') }}" method="POST">
     <div class="auth-field">
-      <label>Correo</label>
-      <input type="email" name="email" required autofocus placeholder="tu@empresa.com">
+      <label for="username">Usuario</label>
+      <input type="text" id="username" name="username" required>
     </div>
+    
     <div class="auth-field">
-      <label>Contraseña</label>
-      <input type="password" name="password" required placeholder="••••••••">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" required>
     </div>
-    <button type="submit" class="btn auth-submit">Ingresar</button>
+
+    <button type="submit" class="auth-submit">Ingresar</button>
   </form>
 
   <div class="auth-foot">
-    ¿No tienes cuenta? <a href="{{ url_for('register') }}">Crea una gratis</a>
+    ¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate</a>
   </div>
 </div>
 </body>
