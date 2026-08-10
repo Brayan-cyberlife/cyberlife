@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Suscripción · Cyber Life{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Suscripción</h1>
+    <p class="page-subtitle">Consulta el plan asociado a tu cuenta de Cyber Life.</p>
+  </div>
+</div>
+
+<div class="account-grid">
+  <section class="account-card account-card-full">
+    <div class="subscription-plan">
+      <div>
+        <h2 class="subscription-plan-name">Plan Free</h2>
+        <p class="subscription-plan-label">Plan actual de Cyber Life</p>
+      </div>
+      <span class="account-badge">Activo</span>
+    </div>
+
+    <dl class="account-meta">
+      <dt>Empresa</dt>
+      <dd>{{ current_user.company.name }}</dd>
+
+      <dt>Estado</dt>
+      <dd>Servicio activo</dd>
+    </dl>
+
+    <ul class="subscription-features">
+      <li>Gestión de activos TI</li>
+      <li>Panel de inventario</li>
+      <li>Alertas de vencimiento</li>
+      <li>Exportación CSV</li>
+    </ul>
+
+    <div class="account-note" style="margin-top:22px;">
+      La gestión de planes, pagos y facturación se habilitará en una futura versión de Cyber Life.
+    </div>
+  </section>
+</div>
+{% endblock %}

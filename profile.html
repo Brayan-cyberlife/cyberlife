@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Perfil · Cyber Life{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Perfil</h1>
+    <p class="page-subtitle">Administra la información básica de tu cuenta.</p>
+  </div>
+</div>
+
+<div class="account-grid">
+  <section class="account-card account-card-full">
+    <h2 class="account-card-title">Información personal</h2>
+    <p class="account-card-subtitle">Estos datos se utilizan para identificar tu cuenta dentro de Cyber Life.</p>
+
+    <form method="POST" class="account-form">
+      <div class="auth-field">
+        <label for="name">Nombre</label>
+        <input id="name" name="name" type="text" value="{{ current_user.name }}" required>
+      </div>
+
+      <div class="auth-field">
+        <label for="email">Correo electrónico</label>
+        <input id="email" name="email" type="email" value="{{ current_user.email }}" required>
+      </div>
+
+      <div class="auth-field">
+        <label for="company">Empresa</label>
+        <input id="company" type="text" value="{{ current_user.company.name }}" disabled>
+      </div>
+
+      <div class="auth-field">
+        <label for="role">Rol</label>
+        <input id="role" type="text" value="{{ 'Super administrador' if current_user.is_super_admin else current_user.role|capitalize }}" disabled>
+      </div>
+
+      <button type="submit" class="btn">Guardar cambios</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
