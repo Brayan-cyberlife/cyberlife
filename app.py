@@ -423,6 +423,8 @@ def admin_dashboard():
         total_companies=total_companies,
         total_users=total_users,
         total_assets=total_assets,
+        search_query=search_query,
+        status_filter=status_filter,
     )
 
 
@@ -432,24 +434,41 @@ def admin_dashboard():
 def create_company():
     if request.method == "POST":
         company_name = request.form.get("company_name", "").strip()
+        admin_name = request.form.get("admin_name", "").strip()
+        admin_email = request.form.get("admin_email", "").strip().lower()
+        admin_password = request.form.get("admin_password", "")
 
-        if not company_name:
-            flash("Debes ingresar el nombre de la empresa.", "danger")
+        if not company_name or not admin_name or not admin_email or not admin_password:
+            flash("Completa todos los campos obligatorios.", "danger")
             return render_template("create_company.html")
 
-        existing = Company.query.filter(
+        existing_company = Company.query.filter(
             db.func.lower(Company.name) == company_name.lower()
         ).first()
 
-        if existing:
+        if existing_company:
             flash("Ya existe una empresa con ese nombre.", "danger")
+            return render_template("create_company.html")
+
+        if User.query.filter_by(email=admin_email).first():
+            flash("Ya existe una cuenta con ese correo.", "danger")
             return render_template("create_company.html")
 
         company = Company(name=company_name, is_active=True)
         db.session.add(company)
+        db.session.flush()
+
+        admin_user = User(
+            company_id=company.id,
+            name=admin_name,
+            email=admin_email,
+            role="admin",
+        )
+        admin_user.set_password(admin_password)
+        db.session.add(admin_user)
         db.session.commit()
 
-        flash(f'Empresa "{company.name}" creada correctamente.', "success")
+        flash(f'Empresa "{company.name}" creada correctamente, junto con su cuenta de administrador.', "success")
         return redirect(url_for("admin_dashboard"))
 
     return render_template("create_company.html")
