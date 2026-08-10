@@ -429,3 +429,36 @@ tr:hover td { background: var(--surface-2); }
   0% { transform: rotate(25deg) translateY(50px); opacity: 0.4; }
   100% { transform: rotate(22deg) translateY(-50px); opacity: 0.2; }
 }
+
+/* ==========================================================================
+   AJUSTE DE CONTROL: RAYOS LÁSER DE NEÓN ULTRA BRILLANTES (SOBREESCRITURA)
+   ========================================================================== */
+.neon-line-1 {
+  position: fixed !important;
+  top: -10% !important;
+  left: -10% !important;
+  width: 150vw !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent) !important;
+  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary)) !important;
+  transform: rotate(-15deg) !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+  animation: desplazarNeon1 14s ease-in-out infinite alternate !important;
+}
+
+.neon-line-2 {
+  position: fixed !important;
+  bottom: -5% !important;
+  right: -10% !important;
+  width: 150vw !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent) !important;
+  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary)) !important;
+  transform: rotate(25deg) !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+  opacity: 0.7 !important;
+  animation: desplazarNeon2 18s ease-in-out infinite alternate !important;
+}
