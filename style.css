@@ -20,10 +20,18 @@
 body {
   margin: 0;
   background: var(--bg);
+  /* Cuadrícula sutil animada para estética hacker/terminal */
+  background-image: 
+    linear-gradient(to right, rgba(143, 224, 48, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(143, 224, 48, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.5;
+  position: relative;
+  overflow-x: hidden;
+  animation: moverCuadricula 25s linear infinite;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -134,6 +142,7 @@ a { color: inherit; text-decoration: none; }
 }
 .flash-success { background: rgba(158, 245, 19, 0.08); border-color: var(--ok); color: var(--ok); }
 .flash-info { background: rgba(91, 141, 239, 0.08); border-color: var(--info); color: var(--info); }
+.flash-danger { background: rgba(239, 91, 91, 0.08); border-color: var(--danger); color: var(--danger); }
 
 /* Summary cards */
 .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
@@ -306,38 +315,141 @@ tr:hover td { background: var(--surface-2); }
   padding: 5px 9px;
   background: transparent;
   cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
 }
-.row-actions a:hover, .row-actions button:hover { color: var(--text); border-color: var(--text-dim); }
+.row-actions a:hover, .row-actions button:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
 
-/* Form */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.form-grid .full { grid-column: 1 / -1; }
-.field label {
-  display: block;
-  font-size: 12px;
-  color: var(--text-dim);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.field input, .field select, .field textarea { width: 100%; }
-.form-actions { margin-top: 24px; display: flex; gap: 10px; }
+/* ==========================================================================
+   NUEVOS ESTILOS: PANTALLA DE LOGIN CON NEÓN DINÁMICO
+   ========================================================================== */
 
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-dim);
+/* Líneas de neón flotantes vinculadas exclusivamente a la clase .auth-page */
+.auth-page::before, .auth-page::after {
+  content: "";
+  position: fixed;
+  background: var(--primary);
+  filter: drop-shadow(0 0 10px var(--primary)) drop-shadow(0 0 20px var(--primary));
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: 1;
 }
-.empty-state .mono { display: block; margin-bottom: 8px; font-size: 22px; color: var(--border); }
 
-@media (max-width: 900px) {
-  .shell { grid-template-columns: 1fr; }
-  .sidebar { flex-direction: row; align-items: center; padding: 14px 18px; }
-  .nav { flex-direction: row; }
-  .cards { grid-template-columns: 1fr 1fr; }
-  .form-grid { grid-template-columns: 1fr; }
+/* Línea vertical moviéndose lateralmente */
+.auth-page::before {
+  top: 0;
+  width: 2px;
+  height: 100vh;
+  animation: moverLineaVertical 14s ease-in-out infinite alternate;
 }
+
+/* Línea horizontal moviéndose verticalmente */
+.auth-page::after {
+  left: 0;
+  width: 100vw;
+  height: 2px;
+  animation: moverLineaHorizontal 18s ease-in-out infinite alternate;
+}
+
+/* Contenedor centralizado para el login */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  padding: 20px;
+}
+
+/* Caja de login con fondo traslúcido y desenfoque */
+.auth-box {
+  width: 100%;
+  max-width: 380px;
+  padding: 30px;
+
+
+/* ==========================================================================
+   NUEVOS ESTILOS: PANTALLA DE LOGIN CON NEÓN DINÁMICO
+   ========================================================================== */
+
+/* Líneas de neón flotantes vinculadas exclusivamente a la clase .auth-page */
+.auth-page::before, .auth-page::after {
+  content: "";
+  position: fixed;
+  background: var(--primary);
+  filter: drop-shadow(0 0 10px var(--primary)) drop-shadow(0 0 20px var(--primary));
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+/* Línea vertical moviéndose lateralmente */
+.auth-page::before {
+  top: 0;
+  width: 2px;
+  height: 100vh;
+  animation: moverLineaVertical 14s ease-in-out infinite alternate;
+}
+
+/* Línea horizontal moviéndose verticalmente */
+.auth-page::after {
+  left: 0;
+  width: 100vw;
+  height: 2px;
+  animation: moverLineaHorizontal 18s ease-in-out infinite alternate;
+}
+
+/* Contenedor centralizado para el login */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  padding: 20px;
+}
+
+/* Caja de login con fondo traslúcido y desenfoque (Efecto Vidrio Esmerilado) */
+.auth-box {
+  width: 100%;
+  max-width: 380px;
+  padding: 30px;
+  background: rgba(12, 17, 12, 0.85); /* Usa tu color var(--surface) con transparencia */
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(143, 224, 48, 0.08);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+.auth-brand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 28px; }
+.auth-brand img { width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 14px var(--primary-dim); }
+.auth-brand span { font-family: var(--font-display); font-weight: 700; font-size: 17px; letter-spacing: 0.02em; }
+.auth-title { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin-bottom: 6px; text-align: center; }
+.auth-sub { color: var(--text-dim); font-size: 13px; text-align: center; margin-bottom: 26px; }
+.auth-field { margin-bottom: 16px; }
+.auth-field label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display); }
+.auth-field input { width: 100%; }
+.auth-submit { width: 100%; justify-content: center; margin-top: 12px; }
+.auth-foot { text-align: center; margin-top: 24px; font-size: 13px; color: var(--text-dim); }
+.auth-foot a { color: var(--primary); }
+.auth-foot a:hover { text-decoration: underline; }
+
+/* --- DECLARACIÓN DE ANIMACIONES (KEYFRAMES) --- */
+@keyframes moverCuadricula {
+  from { background-position: 0 0; }
+  to { background-position: 40px 40px; }
+}
+
+@keyframes moverLineaVertical {
+  0% { left: 8%; }
+  100% { left: 92%; }
+}
+
+@keyframes moverLineaHorizontal {
+  0% { top: 12%; }
+  100% { top: 88%; }
+}
+
