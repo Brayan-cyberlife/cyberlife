@@ -6,6 +6,12 @@
     <p class="page-title">Panel de administrador</p>
     <p class="page-subtitle">Vista global de todas las empresas registradas en Cyber Life</p>
   </div>
+  <!-- BOTÓN AGREGADO: Registrar Nueva Empresa usando tu clase .btn nativa -->
+  <div>
+    <a href="{{ url_for('create_company') }}" class="btn">
+      <span class="mono">+</span> Registrar Empresa
+    </a>
+  </div>
 </div>
 
 <div class="cards">
@@ -21,6 +27,24 @@
     <div class="card-label"><span class="led led-none"></span>Activos totales</div>
     <div class="card-value">{{ total_assets }}</div>
   </div>
+</div>
+
+<!-- COMPONENTE AGREGADO: Barra de herramientas con buscador y filtros por estado -->
+<div class="toolbar">
+  <form method="GET" action="{{ url_for('admin_dashboard') }}" style="display: flex; gap: 10px; width: 100%; flex-wrap: wrap;">
+    <input type="text" name="search" placeholder="Buscar por nombre de empresa..." value="{{ request.args.get('search', '') }}" style="flex: 1; min-width: 200px;">
+    
+    <select name="status">
+      <option value="">Todos los estados</option>
+      <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>Activas</option>
+      <option value="inactive" {% if request.args.get('status') == 'inactive' %}selected{% endif %}>Desactivadas</option>
+    </select>
+
+    <button type="submit" class="btn btn-ghost">Filtrar</button>
+    {% if request.args.get('search') or request.args.get('status') %}
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost" style="color: var(--danger); border-color: var(--danger);">Limpiar</a>
+    {% endif %}
+  </form>
 </div>
 
 <div class="panel">
@@ -69,7 +93,7 @@
   {% else %}
   <div class="empty-state">
     <span class="mono">—</span>
-    Todavía no hay empresas registradas.
+    No se encontraron empresas con los filtros aplicados o no hay registros.
   </div>
   {% endif %}
 </div>
