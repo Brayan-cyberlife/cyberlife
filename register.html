@@ -5,66 +5,161 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crear cuenta · Cyber Life</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<style>
-  body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
-  .auth-box{width:100%;max-width:420px;padding:0 20px;}
-  .auth-brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px;}
-  .auth-brand img{width:40px;height:40px;border-radius:50%;box-shadow:0 0 14px var(--primary-dim);}
-  .auth-brand span{font-family:var(--font-display);font-weight:700;font-size:17px;}
-  .auth-title{font-family:var(--font-display);font-size:19px;font-weight:600;margin-bottom:6px;text-align:center;}
-  .auth-sub{color:var(--text-dim);font-size:13px;text-align:center;margin-bottom:26px;}
-  .auth-field{margin-bottom:14px;}
-  .auth-field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;}
-  .auth-field input{width:100%;}
-  .auth-submit{width:100%;justify-content:center;margin-top:8px;}
-  .auth-foot{text-align:center;margin-top:20px;font-size:13px;color:var(--text-dim);}
-  .auth-foot a{color:var(--primary);}
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ range(1, 9999) | random }}">
 </head>
-<body>
-<div class="auth-box">
-  <div class="auth-brand">
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="Cyber Life">
-    <span>CYBER LIFE</span>
-  </div>
-  <div class="auth-title">Crea tu cuenta</div>
-  <div class="auth-sub">Empieza gratis con datos de ejemplo precargados</div>
+<body class="auth-page">
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-stack">
-        {% for category, message in messages %}
-          <div class="flash flash-{{ category }}">{{ message }}</div>
-        {% endfor %}
+<div class="network-bg">
+  <svg class="network-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g class="net-drift">
+      <line x1="53.8" y1="30.7" x2="229.4" y2="24.1" class="net-edge" style="animation-delay:2.84s"/>
+      <line x1="53.8" y1="30.7" x2="33.8" y2="156.8" class="net-edge" style="animation-delay:3.98s"/>
+      <line x1="229.4" y1="24.1" x2="360.7" y2="48.7" class="net-edge" style="animation-delay:0.36s"/>
+      <line x1="229.4" y1="24.1" x2="227.0" y2="217.6" class="net-edge" style="animation-delay:4.21s"/>
+      <line x1="360.7" y1="48.7" x2="455.8" y2="60.6" class="net-edge" style="animation-delay:3.88s"/>
+      <line x1="360.7" y1="48.7" x2="364.9" y2="171.3" class="net-edge" style="animation-delay:5.96s"/>
+      <line x1="455.8" y1="60.6" x2="596.6" y2="54.4" class="net-edge" style="animation-delay:4.93s"/>
+      <line x1="455.8" y1="60.6" x2="547.6" y2="141.9" class="net-edge" style="animation-delay:1.71s"/>
+      <line x1="596.6" y1="54.4" x2="742.7" y2="25.6" class="net-edge" style="animation-delay:2.31s"/>
+      <line x1="596.6" y1="54.4" x2="547.6" y2="141.9" class="net-edge" style="animation-delay:4.01s"/>
+      <line x1="596.6" y1="54.4" x2="678.7" y2="162.3" class="net-edge" style="animation-delay:0.14s"/>
+      <line x1="742.7" y1="25.6" x2="921.0" y2="87.5" class="net-edge" style="animation-delay:2.77s"/>
+      <line x1="742.7" y1="25.6" x2="678.7" y2="162.3" class="net-edge" style="animation-delay:1.01s"/>
+      <line x1="742.7" y1="25.6" x2="750.1" y2="147.9" class="net-edge" style="animation-delay:0.7s"/>
+      <line x1="921.0" y1="87.5" x2="750.1" y2="147.9" class="net-edge" style="animation-delay:0.35s"/>
+      <line x1="921.0" y1="87.5" x2="909.4" y2="206.6" class="net-edge" style="animation-delay:4.61s"/>
+      <line x1="33.8" y1="156.8" x2="227.0" y2="217.6" class="net-edge" style="animation-delay:0.78s"/>
+      <line x1="33.8" y1="156.8" x2="39.5" y2="306.9" class="net-edge" style="animation-delay:1.49s"/>
+      <line x1="227.0" y1="217.6" x2="364.9" y2="171.3" class="net-edge" style="animation-delay:2.35s"/>
+      <line x1="227.0" y1="217.6" x2="228.2" y2="289.3" class="net-edge" style="animation-delay:5.23s"/>
+      <line x1="227.0" y1="217.6" x2="361.9" y2="263.3" class="net-edge" style="animation-delay:0.48s"/>
+      <line x1="364.9" y1="171.3" x2="361.9" y2="263.3" class="net-edge" style="animation-delay:2.7s"/>
+      <line x1="364.9" y1="171.3" x2="456.0" y2="275.3" class="net-edge" style="animation-delay:3.3s"/>
+      <line x1="547.6" y1="141.9" x2="678.7" y2="162.3" class="net-edge" style="animation-delay:5.3s"/>
+      <line x1="678.7" y1="162.3" x2="750.1" y2="147.9" class="net-edge" style="animation-delay:4.92s"/>
+      <line x1="678.7" y1="162.3" x2="660.9" y2="293.9" class="net-edge" style="animation-delay:5.18s"/>
+      <line x1="750.1" y1="147.9" x2="909.4" y2="206.6" class="net-edge" style="animation-delay:1.67s"/>
+      <line x1="750.1" y1="147.9" x2="767.1" y2="307.2" class="net-edge" style="animation-delay:2.49s"/>
+      <line x1="909.4" y1="206.6" x2="923.9" y2="283.2" class="net-edge" style="animation-delay:2.15s"/>
+      <line x1="39.5" y1="306.9" x2="228.2" y2="289.3" class="net-edge" style="animation-delay:5.31s"/>
+      <line x1="39.5" y1="306.9" x2="100.9" y2="436.7" class="net-edge" style="animation-delay:5.75s"/>
+      <line x1="228.2" y1="289.3" x2="361.9" y2="263.3" class="net-edge" style="animation-delay:0.91s"/>
+      <line x1="228.2" y1="289.3" x2="188.7" y2="426.3" class="net-edge" style="animation-delay:1.06s"/>
+      <line x1="361.9" y1="263.3" x2="456.0" y2="275.3" class="net-edge" style="animation-delay:1.39s"/>
+      <line x1="456.0" y1="275.3" x2="522.9" y2="402.2" class="net-edge" style="animation-delay:1.4s"/>
+      <line x1="660.9" y1="293.9" x2="767.1" y2="307.2" class="net-edge" style="animation-delay:2.91s"/>
+      <line x1="660.9" y1="293.9" x2="690.9" y2="387.9" class="net-edge" style="animation-delay:3.53s"/>
+      <line x1="767.1" y1="307.2" x2="923.9" y2="283.2" class="net-edge" style="animation-delay:1.58s"/>
+      <line x1="767.1" y1="307.2" x2="690.9" y2="387.9" class="net-edge" style="animation-delay:0.02s"/>
+      <line x1="767.1" y1="307.2" x2="777.5" y2="441.6" class="net-edge" style="animation-delay:2.51s"/>
+      <line x1="767.1" y1="307.2" x2="893.8" y2="419.1" class="net-edge" style="animation-delay:2.22s"/>
+      <line x1="923.9" y1="283.2" x2="893.8" y2="419.1" class="net-edge" style="animation-delay:3.4s"/>
+      <line x1="100.9" y1="436.7" x2="188.7" y2="426.3" class="net-edge" style="animation-delay:5.72s"/>
+      <line x1="100.9" y1="436.7" x2="25.3" y2="554.1" class="net-edge" style="animation-delay:4.14s"/>
+      <line x1="188.7" y1="426.3" x2="25.3" y2="554.1" class="net-edge" style="animation-delay:3.09s"/>
+      <line x1="188.7" y1="426.3" x2="240.7" y2="546.1" class="net-edge" style="animation-delay:3.71s"/>
+      <line x1="359.7" y1="451.5" x2="522.9" y2="402.2" class="net-edge" style="animation-delay:4.06s"/>
+      <line x1="359.7" y1="451.5" x2="240.7" y2="546.1" class="net-edge" style="animation-delay:0.32s"/>
+      <line x1="359.7" y1="451.5" x2="394.7" y2="524.4" class="net-edge" style="animation-delay:5.4s"/>
+      <line x1="522.9" y1="402.2" x2="690.9" y2="387.9" class="net-edge" style="animation-delay:4.68s"/>
+      <line x1="522.9" y1="402.2" x2="519.5" y2="547.9" class="net-edge" style="animation-delay:5.25s"/>
+      <line x1="690.9" y1="387.9" x2="777.5" y2="441.6" class="net-edge" style="animation-delay:4.79s"/>
+      <line x1="690.9" y1="387.9" x2="650.8" y2="536.3" class="net-edge" style="animation-delay:2.35s"/>
+      <line x1="777.5" y1="441.6" x2="893.8" y2="419.1" class="net-edge" style="animation-delay:2.39s"/>
+      <line x1="777.5" y1="441.6" x2="650.8" y2="536.3" class="net-edge" style="animation-delay:0.62s"/>
+      <line x1="777.5" y1="441.6" x2="819.7" y2="577.4" class="net-edge" style="animation-delay:3.81s"/>
+      <line x1="893.8" y1="419.1" x2="819.7" y2="577.4" class="net-edge" style="animation-delay:0.37s"/>
+      <line x1="25.3" y1="554.1" x2="240.7" y2="546.1" class="net-edge" style="animation-delay:0.4s"/>
+      <line x1="240.7" y1="546.1" x2="394.7" y2="524.4" class="net-edge" style="animation-delay:1.25s"/>
+      <line x1="394.7" y1="524.4" x2="519.5" y2="547.9" class="net-edge" style="animation-delay:0.97s"/>
+      <line x1="519.5" y1="547.9" x2="650.8" y2="536.3" class="net-edge" style="animation-delay:2.04s"/>
+      <line x1="650.8" y1="536.3" x2="819.7" y2="577.4" class="net-edge" style="animation-delay:0.32s"/>
+      <circle cx="53.8" cy="30.7" r="1.6" class="net-node" style="animation-delay:0.76s"/>
+      <circle cx="229.4" cy="24.1" r="1.8" class="net-node" style="animation-delay:1.82s"/>
+      <circle cx="360.7" cy="48.7" r="1.6" class="net-node" style="animation-delay:4.37s"/>
+      <circle cx="455.8" cy="60.6" r="2.6" class="net-node" style="animation-delay:0.74s"/>
+      <circle cx="596.6" cy="54.4" r="2.0" class="net-node" style="animation-delay:1.74s"/>
+      <circle cx="742.7" cy="25.6" r="2.2" class="net-node" style="animation-delay:0.61s"/>
+      <circle cx="921.0" cy="87.5" r="3.0" class="net-node" style="animation-delay:4.97s"/>
+      <circle cx="33.8" cy="156.8" r="2.3" class="net-node" style="animation-delay:2.42s"/>
+      <circle cx="227.0" cy="217.6" r="1.7" class="net-node" style="animation-delay:0.51s"/>
+      <circle cx="364.9" cy="171.3" r="2.1" class="net-node" style="animation-delay:1.32s"/>
+      <circle cx="547.6" cy="141.9" r="2.9" class="net-node" style="animation-delay:0.81s"/>
+      <circle cx="678.7" cy="162.3" r="1.6" class="net-node" style="animation-delay:4.75s"/>
+      <circle cx="750.1" cy="147.9" r="2.4" class="net-node" style="animation-delay:0.73s"/>
+      <circle cx="909.4" cy="206.6" r="2.5" class="net-node" style="animation-delay:0.14s"/>
+      <circle cx="39.5" cy="306.9" r="2.4" class="net-node" style="animation-delay:4.89s"/>
+      <circle cx="228.2" cy="289.3" r="3.0" class="net-node" style="animation-delay:3.48s"/>
+      <circle cx="361.9" cy="263.3" r="2.0" class="net-node" style="animation-delay:1.83s"/>
+      <circle cx="456.0" cy="275.3" r="1.9" class="net-node" style="animation-delay:3.86s"/>
+      <circle cx="660.9" cy="293.9" r="2.5" class="net-node" style="animation-delay:3.9s"/>
+      <circle cx="767.1" cy="307.2" r="2.1" class="net-node" style="animation-delay:1.12s"/>
+      <circle cx="923.9" cy="283.2" r="2.9" class="net-node" style="animation-delay:4.92s"/>
+      <circle cx="100.9" cy="436.7" r="3.0" class="net-node" style="animation-delay:4.03s"/>
+      <circle cx="188.7" cy="426.3" r="2.9" class="net-node" style="animation-delay:3.7s"/>
+      <circle cx="359.7" cy="451.5" r="2.0" class="net-node" style="animation-delay:2.59s"/>
+      <circle cx="522.9" cy="402.2" r="2.2" class="net-node" style="animation-delay:0.14s"/>
+      <circle cx="690.9" cy="387.9" r="1.6" class="net-node" style="animation-delay:1.4s"/>
+      <circle cx="777.5" cy="441.6" r="2.0" class="net-node" style="animation-delay:3.46s"/>
+      <circle cx="893.8" cy="419.1" r="3.1" class="net-node" style="animation-delay:2.24s"/>
+      <circle cx="25.3" cy="554.1" r="3.1" class="net-node" style="animation-delay:4.94s"/>
+      <circle cx="240.7" cy="546.1" r="3.1" class="net-node" style="animation-delay:1.82s"/>
+      <circle cx="394.7" cy="524.4" r="2.0" class="net-node" style="animation-delay:1.13s"/>
+      <circle cx="519.5" cy="547.9" r="1.9" class="net-node" style="animation-delay:1.02s"/>
+      <circle cx="650.8" cy="536.3" r="2.6" class="net-node" style="animation-delay:4.5s"/>
+      <circle cx="819.7" cy="577.4" r="2.9" class="net-node" style="animation-delay:2.4s"/>
+    </g>
+  </svg>
+</div>
+<div class="network-vignette"></div>
+
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Cyber Life">
+      <span>CYBER LIFE</span>
+    </div>
+
+    <div class="auth-title">Crea tu cuenta</div>
+    <div class="auth-sub">Empieza gratis con datos de ejemplo precargados</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <div class="auth-field">
+        <label for="company_name">Nombre de tu empresa</label>
+        <input type="text" id="company_name" name="company_name" required placeholder="Ej: Soporte TI Ltda.">
       </div>
-    {% endif %}
-  {% endwith %}
+      <div class="auth-field">
+        <label for="name">Tu nombre</label>
+        <input type="text" id="name" name="name" required placeholder="Ej: Diego Fuentes">
+      </div>
+      <div class="auth-field">
+        <label for="email">Correo</label>
+        <input type="email" id="email" name="email" required placeholder="tu@empresa.com">
+      </div>
+      <div class="auth-field">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+      </div>
+      <button type="submit" class="btn auth-submit">Crear cuenta</button>
+    </form>
 
-  <form method="post" class="panel">
-    <div class="auth-field">
-      <label>Nombre de tu empresa</label>
-      <input type="text" name="company_name" required placeholder="Ej: Soporte TI Ltda.">
-    </div>
-    <div class="auth-field">
-      <label>Tu nombre</label>
-      <input type="text" name="name" required placeholder="Ej: Diego Fuentes">
-    </div>
-    <div class="auth-field">
-      <label>Correo</label>
-      <input type="email" name="email" required placeholder="tu@empresa.com">
-    </div>
-    <div class="auth-field">
-      <label>Contraseña</label>
-      <input type="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres">
-    </div>
-    <button type="submit" class="btn auth-submit">Crear cuenta</button>
-  </form>
-
-  <div class="auth-foot">
-    ¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Ingresa aquí</a>
+    <a href="{{ url_for('login') }}" class="btn btn-ghost auth-submit" style="margin-top: 10px;">
+      <span class="mono">&lt;</span> Volver al inicio de sesión
+    </a>
   </div>
 </div>
+
 </body>
 </html>
