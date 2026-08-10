@@ -462,3 +462,58 @@ tr:hover td { background: var(--surface-2); }
   opacity: 0.7 !important;
   animation: desplazarNeon2 18s ease-in-out infinite alternate !important;
 }
+
+/* ==========================================================================
+   OPTIMIZACIÓN FINAL: NUEVAS LÍNEAS DERECHAS Y PARTÍCULAS BRILLANTES
+   ========================================================================== */
+
+/* Potenciamos el brillo y visibilidad de las partículas de fondo */
+.auth-page::after {
+  background-image: radial-gradient(rgba(143, 224, 48, 0.4) 1.5px, transparent 1.5px) !important;
+  background-size: 60px 60px !important; /* Un poco más juntas para que pueblen mejor el fondo */
+  opacity: 0.9 !important;
+}
+
+/* NUEVA: Línea diagonal superior derecha */
+.neon-line-3 {
+  position: fixed;
+  top: -15%;
+  right: -20%;
+  width: 130vw;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary));
+  transform: rotate(35deg); /* Ángulo invertido para la derecha */
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.75;
+  animation: desplazarNeon3 16s ease-in-out infinite alternate;
+}
+
+/* NUEVA: Línea diagonal inferior derecha */
+.neon-line-4 {
+  position: fixed;
+  bottom: -10%;
+  right: -30%;
+  width: 140vw;
+  height: 2.5px; /* Un toque más gruesa para primer plano */
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary));
+  transform: rotate(-20deg); /* Ángulo invertido para la derecha */
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.7;
+  animation: desplazarNeon4 20s ease-in-out infinite alternate;
+}
+
+/* --- ANIMACIONES DE MOVIMIENTO PARA LAS NUEVAS LÍNEAS --- */
+@keyframes desplazarNeon3 {
+  0% { transform: rotate(35deg) translateY(-30px); opacity: 0.3; }
+  100% { transform: rotate(32deg) translateY(50px); opacity: 0.8; }
+}
+
+@keyframes desplazarNeon4 {
+  0% { transform: rotate(-20deg) translateY(60px); opacity: 0.7; }
+  100% { transform: rotate(-18deg) translateY(-40px); opacity: 0.3; }
+}
+
