@@ -284,7 +284,9 @@ input:focus, select:focus, textarea:focus {
 .btn-danger { background: var(--danger); color: #14090a; }
 .btn-danger:hover { box-shadow: 0 0 14px rgba(239,91,91,0.35); }
 
-/* Table */
+/* ==========================================================================
+   PARTE 5: ESTILOS DE TABLAS Y ACCIONES
+   ========================================================================== */
 table { width: 100%; border-collapse: collapse; }
 th {
   text-align: left;
@@ -322,35 +324,21 @@ tr:hover td { background: var(--surface-2); }
   border-color: var(--text-dim);
 }
 
+
 /* ==========================================================================
-   NUEVOS ESTILOS: PANTALLA DE LOGIN CON NEÓN DINÁMICO
+   PARTE 6: NUEVOS ESTILOS DE LOGIN CON NEÓN DIAGONAL Y PUNTOS
    ========================================================================== */
 
-/* Líneas de neón flotantes vinculadas exclusivamente a la clase .auth-page */
-.auth-page::before, .auth-page::after {
+/* Nodos/Puntos espaciales flotantes vinculados a la clase .auth-page */
+.auth-page::after {
   content: "";
   position: fixed;
-  background: var(--primary);
-  filter: drop-shadow(0 0 10px var(--primary)) drop-shadow(0 0 20px var(--primary));
-  pointer-events: none;
-  opacity: 0.3;
+  inset: 0;
+  background-image: radial-gradient(rgba(143, 224, 48, 0.15) 1px, transparent 1px);
+  background-size: 80px 80px;
   z-index: 1;
-}
-
-/* Línea vertical moviéndose lateralmente */
-.auth-page::before {
-  top: 0;
-  width: 2px;
-  height: 100vh;
-  animation: moverLineaVertical 14s ease-in-out infinite alternate;
-}
-
-/* Línea horizontal moviéndose verticalmente */
-.auth-page::after {
-  left: 0;
-  width: 100vw;
-  height: 2px;
-  animation: moverLineaHorizontal 18s ease-in-out infinite alternate;
+  pointer-events: none;
+  animation: flotarNodos 40s linear infinite;
 }
 
 /* Contenedor centralizado para el login */
@@ -361,62 +349,15 @@ tr:hover td { background: var(--surface-2); }
   min-height: 100vh;
   width: 100vw;
   padding: 20px;
+  position: relative;
 }
 
-/* Caja de login con fondo traslúcido y desenfoque */
+/* Caja de login con fondo traslúcido y desenfoque (Vidrio Esmerilado) */
 .auth-box {
   width: 100%;
   max-width: 380px;
   padding: 30px;
-
-
-/* ==========================================================================
-   NUEVOS ESTILOS: PANTALLA DE LOGIN CON NEÓN DINÁMICO
-   ========================================================================== */
-
-/* Líneas de neón flotantes vinculadas exclusivamente a la clase .auth-page */
-.auth-page::before, .auth-page::after {
-  content: "";
-  position: fixed;
-  background: var(--primary);
-  filter: drop-shadow(0 0 10px var(--primary)) drop-shadow(0 0 20px var(--primary));
-  pointer-events: none;
-  opacity: 0.3;
-  z-index: 1;
-}
-
-/* Línea vertical moviéndose lateralmente */
-.auth-page::before {
-  top: 0;
-  width: 2px;
-  height: 100vh;
-  animation: moverLineaVertical 14s ease-in-out infinite alternate;
-}
-
-/* Línea horizontal moviéndose verticalmente */
-.auth-page::after {
-  left: 0;
-  width: 100vw;
-  height: 2px;
-  animation: moverLineaHorizontal 18s ease-in-out infinite alternate;
-}
-
-/* Contenedor centralizado para el login */
-.auth-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  width: 100vw;
-  padding: 20px;
-}
-
-/* Caja de login con fondo traslúcido y desenfoque (Efecto Vidrio Esmerilado) */
-.auth-box {
-  width: 100%;
-  max-width: 380px;
-  padding: 30px;
-  background: rgba(12, 17, 12, 0.85); /* Usa tu color var(--surface) con transparencia */
+  background: rgba(12, 17, 12, 0.85); /* var(--surface) con transparencia */
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(143, 224, 48, 0.08);
@@ -437,19 +378,54 @@ tr:hover td { background: var(--surface-2); }
 .auth-foot a { color: var(--primary); }
 .auth-foot a:hover { text-decoration: underline; }
 
-/* --- DECLARACIÓN DE ANIMACIONES (KEYFRAMES) --- */
+/* Líneas de neón oblicuas y cruzadas */
+.neon-line-1 {
+  position: fixed;
+  top: -20%;
+  left: -10%;
+  width: 150vw;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  filter: drop-shadow(0 0 8px var(--primary)) drop-shadow(0 0 15px var(--primary));
+  transform: rotate(-15deg);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.4;
+  animation: desplazarNeon1 12s ease-in-out infinite alternate;
+}
+
+.neon-line-2 {
+  position: fixed;
+  bottom: -10%;
+  right: -10%;
+  width: 150vw;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  filter: drop-shadow(0 0 8px var(--primary)) drop-shadow(0 0 15px var(--primary));
+  transform: rotate(25deg);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.3;
+  animation: desplazarNeon2 16s ease-in-out infinite alternate;
+}
+
+/* --- ANIMACIONES DE MOVIMIENTO (KEYFRAMES) --- */
 @keyframes moverCuadricula {
   from { background-position: 0 0; }
   to { background-position: 40px 40px; }
 }
 
-@keyframes moverLineaVertical {
-  0% { left: 8%; }
-  100% { left: 92%; }
+@keyframes flotarNodos {
+  0% { background-position: 0 0; }
+  100% { background-position: 80px 160px; }
 }
 
-@keyframes moverLineaHorizontal {
-  0% { top: 12%; }
-  100% { top: 88%; }
+@keyframes desplazarNeon1 {
+  0% { transform: rotate(-15deg) translateY(-40px); opacity: 0.2; }
+  100% { transform: rotate(-12deg) translateY(60px); opacity: 0.5; }
 }
 
+@keyframes desplazarNeon2 {
+  0% { transform: rotate(25deg) translateY(50px); opacity: 0.4; }
+  100% { transform: rotate(22deg) translateY(-50px); opacity: 0.2; }
+}
