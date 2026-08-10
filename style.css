@@ -325,23 +325,23 @@ tr:hover td { background: var(--surface-2); }
 }
 
 
+
 /* ==========================================================================
-   PARTE 6: NUEVOS ESTILOS DE LOGIN CON NEÓN DIAGONAL Y PUNTOS
+   PARTE 6: LOGIN CON NEÓN DIAGONAL Y PARTÍCULAS
    ========================================================================== */
 
-/* Nodos/Puntos espaciales flotantes vinculados a la clase .auth-page */
 .auth-page::after {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(rgba(143, 224, 48, 0.15) 1px, transparent 1px);
-  background-size: 80px 80px;
+  background-image: radial-gradient(rgba(143, 224, 48, 0.4) 1.5px, transparent 1.5px);
+  background-size: 60px 60px;
+  opacity: 0.9;
   z-index: 1;
   pointer-events: none;
   animation: flotarNodos 40s linear infinite;
 }
 
-/* Contenedor centralizado para el login */
 .auth-container {
   display: flex;
   align-items: center;
@@ -352,12 +352,11 @@ tr:hover td { background: var(--surface-2); }
   position: relative;
 }
 
-/* Caja de login con fondo traslúcido y desenfoque (Vidrio Esmerilado) */
 .auth-box {
   width: 100%;
   max-width: 380px;
   padding: 30px;
-  background: rgba(12, 17, 12, 0.85); /* var(--surface) con transparencia */
+  background: rgba(12, 17, 12, 0.85);
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(143, 224, 48, 0.08);
@@ -378,182 +377,103 @@ tr:hover td { background: var(--surface-2); }
 .auth-foot a { color: var(--primary); }
 .auth-foot a:hover { text-decoration: underline; }
 
-/* Líneas de neón oblicuas y cruzadas */
+/* Líneas de neón oblicuas y cruzadas (4 rayos, ángulos distintos) */
+.neon-line-1,
+.neon-line-2,
+.neon-line-3,
+.neon-line-4 {
+  position: fixed;
+  width: 150vw;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary));
+  z-index: 2;
+  pointer-events: none;
+}
+
 .neon-line-1 {
-  position: fixed;
-  top: -20%;
-  left: -10%;
-  width: 150vw;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  filter: drop-shadow(0 0 8px var(--primary)) drop-shadow(0 0 15px var(--primary));
+  top: -10%; left: -10%;
   transform: rotate(-15deg);
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0.4;
-  animation: desplazarNeon1 12s ease-in-out infinite alternate;
+  opacity: 0.8;
+  animation: desplazarNeon1 14s ease-in-out infinite alternate;
 }
-
 .neon-line-2 {
-  position: fixed;
-  bottom: -10%;
-  right: -10%;
-  width: 150vw;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  filter: drop-shadow(0 0 8px var(--primary)) drop-shadow(0 0 15px var(--primary));
+  bottom: -5%; right: -10%;
   transform: rotate(25deg);
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0.3;
-  animation: desplazarNeon2 16s ease-in-out infinite alternate;
+  opacity: 0.7;
+  animation: desplazarNeon2 18s ease-in-out infinite alternate;
 }
-
-/* --- ANIMACIONES DE MOVIMIENTO (KEYFRAMES) --- */
-@keyframes moverCuadricula {
-  from { background-position: 0 0; }
-  to { background-position: 40px 40px; }
+.neon-line-3 {
+  top: -15%; right: -20%;
+  width: 130vw;
+  transform: rotate(35deg);
+  opacity: 0.75;
+  animation: desplazarNeon3 16s ease-in-out infinite alternate;
+}
+.neon-line-4 {
+  bottom: -10%; right: -30%;
+  width: 140vw;
+  height: 2.5px;
+  transform: rotate(-20deg);
+  opacity: 0.7;
+  animation: desplazarNeon4 20s ease-in-out infinite alternate;
 }
 
 @keyframes flotarNodos {
   0% { background-position: 0 0; }
   100% { background-position: 80px 160px; }
 }
-
 @keyframes desplazarNeon1 {
-  0% { transform: rotate(-15deg) translateY(-40px); opacity: 0.2; }
-  100% { transform: rotate(-12deg) translateY(60px); opacity: 0.5; }
+  0% { transform: rotate(-15deg) translateY(-40px); opacity: 0.5; }
+  100% { transform: rotate(-12deg) translateY(60px); opacity: 0.8; }
 }
-
 @keyframes desplazarNeon2 {
-  0% { transform: rotate(25deg) translateY(50px); opacity: 0.4; }
-  100% { transform: rotate(22deg) translateY(-50px); opacity: 0.2; }
+  0% { transform: rotate(25deg) translateY(50px); opacity: 0.7; }
+  100% { transform: rotate(22deg) translateY(-50px); opacity: 0.4; }
 }
-
-/* ==========================================================================
-   AJUSTE DE CONTROL: RAYOS LÁSER DE NEÓN ULTRA BRILLANTES (SOBREESCRITURA)
-   ========================================================================== */
-.neon-line-1 {
-  position: fixed !important;
-  top: -10% !important;
-  left: -10% !important;
-  width: 150vw !important;
-  height: 2px !important;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent) !important;
-  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary)) !important;
-  transform: rotate(-15deg) !important;
-  z-index: 2 !important;
-  pointer-events: none !important;
-  opacity: 0.8 !important;
-  animation: desplazarNeon1 14s ease-in-out infinite alternate !important;
-}
-
-.neon-line-2 {
-  position: fixed !important;
-  bottom: -5% !important;
-  right: -10% !important;
-  width: 150vw !important;
-  height: 2px !important;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent) !important;
-  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary)) !important;
-  transform: rotate(25deg) !important;
-  z-index: 2 !important;
-  pointer-events: none !important;
-  opacity: 0.7 !important;
-  animation: desplazarNeon2 18s ease-in-out infinite alternate !important;
-}
-
-/* ==========================================================================
-   OPTIMIZACIÓN FINAL: NUEVAS LÍNEAS DERECHAS Y PARTÍCULAS BRILLANTES
-   ========================================================================== */
-
-/* Potenciamos el brillo y visibilidad de las partículas de fondo */
-.auth-page::after {
-  background-image: radial-gradient(rgba(143, 224, 48, 0.4) 1.5px, transparent 1.5px) !important;
-  background-size: 60px 60px !important; /* Un poco más juntas para que pueblen mejor el fondo */
-  opacity: 0.9 !important;
-}
-
-/* NUEVA: Línea diagonal superior derecha */
-.neon-line-3 {
-  position: fixed;
-  top: -15%;
-  right: -20%;
-  width: 130vw;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary));
-  transform: rotate(35deg); /* Ángulo invertido para la derecha */
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0.75;
-  animation: desplazarNeon3 16s ease-in-out infinite alternate;
-}
-
-/* NUEVA: Línea diagonal inferior derecha */
-.neon-line-4 {
-  position: fixed;
-  bottom: -10%;
-  right: -30%;
-  width: 140vw;
-  height: 2.5px; /* Un toque más gruesa para primer plano */
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 15px var(--primary)) drop-shadow(0 0 30px var(--primary));
-  transform: rotate(-20deg); /* Ángulo invertido para la derecha */
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0.7;
-  animation: desplazarNeon4 20s ease-in-out infinite alternate;
-}
-
-/* --- ANIMACIONES DE MOVIMIENTO PARA LAS NUEVAS LÍNEAS --- */
 @keyframes desplazarNeon3 {
   0% { transform: rotate(35deg) translateY(-30px); opacity: 0.3; }
   100% { transform: rotate(32deg) translateY(50px); opacity: 0.8; }
 }
-
 @keyframes desplazarNeon4 {
   0% { transform: rotate(-20deg) translateY(60px); opacity: 0.7; }
   100% { transform: rotate(-18deg) translateY(-40px); opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-line-1, .neon-line-2, .neon-line-3, .neon-line-4, .auth-page::after {
+    animation: none;
+  }
 }
 
 /* ==========================================================================
    MEJORAS PREMIUM: DASHBOARD DE ADMINISTRACIÓN (.SHELL / .CONTENT)
    ========================================================================== */
 
-/* Tarjetas de métricas estilo Cristal Esmerilado con Neón */
 .card {
-  background: rgba(12, 17, 12, 0.75) !important; /* Traslúcido */
-  border: 1px solid var(--border) !important;
-  backdrop-filter: blur(6px) !important;
+  background: rgba(12, 17, 12, 0.75);
+  backdrop-filter: blur(6px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease !important;
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 .card:hover {
-  border-color: var(--primary) !important;
-  transform: translateY(-3px) !important;
-  box-shadow: 0 0 15px rgba(143, 224, 48, 0.15) !important;
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 0 15px rgba(143, 224, 48, 0.15);
 }
 
-/* Panel de tablas estilo Cristal */
 .panel {
-  background: rgba(12, 17, 12, 0.8) !important;
-  border: 1px solid var(--border) !important;
-  backdrop-filter: blur(8px) !important;
+  background: rgba(12, 17, 12, 0.8);
+  backdrop-filter: blur(8px);
   box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* Efecto de escáner brillante al pasar el cursor sobre las filas de la tabla */
-tr {
-  transition: background 0.15s ease;
-}
 tr:hover td {
-  background: rgba(25, 38, 23, 0.4) !important; /* Verde oscuro traslúcido */
-  color: var(--text) !important;
-  border-bottom-color: rgba(143, 224, 48, 0.3) !important;
+  background: rgba(25, 38, 23, 0.4);
+  color: var(--text);
+  border-bottom-color: rgba(143, 224, 48, 0.3);
 }
 
-/* Estilización de los botones nativos dentro de las acciones de fila */
 .row-actions form button {
   font-family: var(--font-body);
   font-size: 12px;
@@ -572,19 +492,16 @@ tr:hover td {
   box-shadow: 0 0 8px rgba(143, 224, 48, 0.2);
 }
 
-/* Sobreescritura específica para mantener el botón peligroso rojo */
 .row-actions form button.btn-danger {
-  color: var(--danger) !important;
-  border-color: var(--danger) !important;
-  background: rgba(239, 91, 91, 0.02) !important;
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(239, 91, 91, 0.02);
 }
 .row-actions form button.btn-danger:hover {
-  color: #14090a !important;
-  background: var(--danger) !important;
-  box-shadow: 0 0 12px rgba(239, 91, 91, 0.4) !important;
+  color: #14090a;
+  background: var(--danger);
+  box-shadow: 0 0 12px rgba(239, 91, 91, 0.4);
 }
-
-/* Estado de tabla vacía */
 .empty-state {
   text-align: center;
   padding: 40px;
