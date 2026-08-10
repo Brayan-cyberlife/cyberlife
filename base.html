@@ -36,6 +36,27 @@
         <span class="nav-ico">⚙</span> Administrador
       </a>
       {% endif %}
+
+      <details class="account-menu"
+        {% if request.endpoint in ['profile', 'settings', 'subscription'] %}open{% endif %}>
+        <summary class="account-summary">
+          <span class="nav-ico">◉</span>
+          <span>Cuenta</span>
+          <span class="account-chevron">⌄</span>
+        </summary>
+
+        <div class="account-subnav">
+          <a href="{{ url_for('profile') }}" class="{{ 'active' if request.endpoint == 'profile' }}">
+            <span class="subnav-ico">◌</span> Perfil
+          </a>
+          <a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' }}">
+            <span class="subnav-ico">⚙</span> Ajustes
+          </a>
+          <a href="{{ url_for('subscription') }}" class="{{ 'active' if request.endpoint == 'subscription' }}">
+            <span class="subnav-ico">◇</span> Suscripción
+          </a>
+        </div>
+      </details>
     </nav>
     <div class="sidebar-foot">
       <div class="mono" style="color:var(--text);margin-bottom:2px;">{{ current_user.company.name }}</div>

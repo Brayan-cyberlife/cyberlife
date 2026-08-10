@@ -423,8 +423,6 @@ def admin_dashboard():
         total_companies=total_companies,
         total_users=total_users,
         total_assets=total_assets,
-        search_query=search_query,
-        status_filter=status_filter,
     )
 
 
@@ -434,41 +432,24 @@ def admin_dashboard():
 def create_company():
     if request.method == "POST":
         company_name = request.form.get("company_name", "").strip()
-        admin_name = request.form.get("admin_name", "").strip()
-        admin_email = request.form.get("admin_email", "").strip().lower()
-        admin_password = request.form.get("admin_password", "")
 
-        if not company_name or not admin_name or not admin_email or not admin_password:
-            flash("Completa todos los campos obligatorios.", "danger")
+        if not company_name:
+            flash("Debes ingresar el nombre de la empresa.", "danger")
             return render_template("create_company.html")
 
-        existing_company = Company.query.filter(
+        existing = Company.query.filter(
             db.func.lower(Company.name) == company_name.lower()
         ).first()
 
-        if existing_company:
+        if existing:
             flash("Ya existe una empresa con ese nombre.", "danger")
-            return render_template("create_company.html")
-
-        if User.query.filter_by(email=admin_email).first():
-            flash("Ya existe una cuenta con ese correo.", "danger")
             return render_template("create_company.html")
 
         company = Company(name=company_name, is_active=True)
         db.session.add(company)
-        db.session.flush()
-
-        admin_user = User(
-            company_id=company.id,
-            name=admin_name,
-            email=admin_email,
-            role="admin",
-        )
-        admin_user.set_password(admin_password)
-        db.session.add(admin_user)
         db.session.commit()
 
-        flash(f'Empresa "{company.name}" creada correctamente, junto con su cuenta de administrador.', "success")
+        flash(f'Empresa "{company.name}" creada correctamente.', "success")
         return redirect(url_for("admin_dashboard"))
 
     return render_template("create_company.html")
@@ -510,6 +491,76 @@ def delete_company(company_id):
 
     flash(f'Empresa "{company_name}" eliminada correctamente.', "info")
     return redirect(url_for("admin_dashboard"))
+
+
+
+# ============================================================
+# CUENTA
+# ============================================================
+
+@app.route("/cuenta/perfil", methods=["GET", "POST"])
+@login_required
+def profile():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+
+        if not name or not email:
+            flash("El nombre y el correo son obligatorios.", "danger")
+            return render_template("profile.html")
+
+        existing_user = User.query.filter(
+            User.email == email,
+            User.id != current_user.id,
+        ).first()
+
+        if existing_user:
+            flash("Ese correo ya está asociado a otra cuenta.", "danger")
+            return render_template("profile.html")
+
+        current_user.name = name
+        current_user.email = email
+        db.session.commit()
+
+        flash("Perfil actualizado correctamente.", "success")
+        return redirect(url_for("profile"))
+
+    return render_template("profile.html")
+
+
+@app.route("/cuenta/ajustes", methods=["GET", "POST"])
+@login_required
+def settings():
+    if request.method == "POST":
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+        confirm_password = request.form.get("confirm_password", "")
+
+        if not current_user.check_password(current_password):
+            flash("La contraseña actual no es correcta.", "danger")
+            return render_template("settings.html")
+
+        if len(new_password) < 8:
+            flash("La nueva contraseña debe tener al menos 8 caracteres.", "danger")
+            return render_template("settings.html")
+
+        if new_password != confirm_password:
+            flash("Las contraseñas nuevas no coinciden.", "danger")
+            return render_template("settings.html")
+
+        current_user.set_password(new_password)
+        db.session.commit()
+
+        flash("Contraseña actualizada correctamente.", "success")
+        return redirect(url_for("settings"))
+
+    return render_template("settings.html")
+
+
+@app.route("/cuenta/suscripcion")
+@login_required
+def subscription():
+    return render_template("subscription.html")
 
 
 # ============================================================
