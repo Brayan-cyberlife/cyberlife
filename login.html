@@ -4,14 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ingresar · Cyber Life</title>
-<link rel="preconnect" href="https://googleapis.com">
-<link href="https://googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<!-- CORREGIDO: Se restauró el enlace correcto de googleapis para evitar errores de red -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- CORREGIDO: Inyección de número dinámico aleatorio para destruir por completo la caché de Render -->
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ range(1, 9999) | random }}">
 </head>
-<!-- 1. Asegúrate de incluir la clase 'auth-page' en el body para activar el neón -->
 <body class="auth-page">
 
-<!-- 2. AGREGADO: Este contenedor centra la tarjeta y le da la escala correcta en pantalla -->
+<!-- AGREGADO: Elementos obligatorios para proyectar las líneas láser oblicuas del fondo -->
+<div class="neon-line-1"></div>
+<div class="neon-line-2"></div>
+
+<!-- Contenedor principal que reescala la tarjeta al tamaño correcto -->
 <div class="auth-container">
   
   <div class="auth-box">
@@ -28,7 +34,6 @@
       {% if messages %}
         <div class="flash-stack">
           {% for category, message in messages %}
-            <!-- Cambiado a flash-danger automáticamente para combinar con tu CSS de borde rojo -->
             <div class="flash flash-danger">{{ message }}</div>
           {% endfor %}
         </div>
@@ -46,7 +51,6 @@
         <input type="password" id="password" name="password" required autocomplete="current-password">
       </div>
 
-      <!-- Usando tu botón verde nativo .btn -->
       <button type="submit" class="btn auth-submit">Ingresar</button>
     </form>
 
@@ -55,8 +59,9 @@
     </div>
   </div>
 
-</div> <!-- Fin de auth-container -->
+</div>
 
 </body>
 </html>
 
+    
