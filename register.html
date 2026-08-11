@@ -141,6 +141,10 @@
         <input type="text" id="company_name" name="company_name" required placeholder="Ej: Soporte TI Ltda.">
       </div>
       <div class="auth-field">
+        <label for="company_rut">RUT de tu empresa</label>
+        <input type="text" id="company_rut" name="company_rut" required placeholder="Ej: 76.123.456-7" maxlength="12" inputmode="numeric" autocomplete="off">
+      </div>
+      <div class="auth-field">
         <label for="name">Tu nombre</label>
         <input type="text" id="name" name="name" required placeholder="Ej: Diego Fuentes">
       </div>
@@ -160,6 +164,29 @@
     </a>
   </div>
 </div>
+
+<script>
+  (function () {
+    var input = document.getElementById('company_rut');
+    if (!input) return;
+    input.addEventListener('input', function (e) {
+      var clean = e.target.value.replace(/[^0-9kK]/g, '').toUpperCase();
+      if (clean.length > 1) {
+        var dv = clean.slice(-1);
+        var body = clean.slice(0, -1);
+        var formatted = '';
+        while (body.length > 3) {
+          formatted = '.' + body.slice(-3) + formatted;
+          body = body.slice(0, -3);
+        }
+        formatted = body + formatted;
+        e.target.value = formatted + '-' + dv;
+      } else {
+        e.target.value = clean;
+      }
+    });
+  })();
+</script>
 
 </body>
 </html>

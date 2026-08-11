@@ -1,6 +1,7 @@
 import csv
 import io
 import os
+import re
 from functools import wraps
 from datetime import datetime
 
@@ -66,6 +67,44 @@ def assets_query():
     return Asset.query.filter_by(company_id=current_user.company_id)
 
 
+def clean_rut(value):
+    """Deja solo dígitos y K/k de un RUT (sin puntos ni guión)."""
+    return re.sub(r"[^0-9kK]", "", value or "").upper()
+
+
+def format_rut(value):
+    """Da formato XX.XXX.XXX-X a partir de un RUT limpio o parcialmente formateado."""
+    clean = clean_rut(value)
+    if len(clean) < 2:
+        return clean
+    body, dv = clean[:-1], clean[-1]
+    parts = []
+    while len(body) > 3:
+        parts.insert(0, body[-3:])
+        body = body[:-3]
+    if body:
+        parts.insert(0, body)
+    return ".".join(parts) + "-" + dv
+
+
+def is_valid_rut(value):
+    """Valida el dígito verificador de un RUT chileno (algoritmo módulo 11)."""
+    clean = clean_rut(value)
+    if len(clean) < 2:
+        return False
+    body, dv = clean[:-1], clean[-1]
+    if not body.isdigit():
+        return False
+    total = 0
+    multiplier = 2
+    for digit in reversed(body):
+        total += int(digit) * multiplier
+        multiplier = multiplier + 1 if multiplier < 7 else 2
+    remainder = 11 - (total % 11)
+    computed_dv = "0" if remainder == 11 else "K" if remainder == 10 else str(remainder)
+    return computed_dv == dv
+
+
 def admin_required(view_func):
     """Solo permite acceder al panel al superadministrador."""
     @wraps(view_func)
@@ -88,19 +127,30 @@ def register():
 
     if request.method == "POST":
         company_name = request.form.get("company_name", "").strip()
+        company_rut = request.form.get("company_rut", "").strip()
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
-        if not company_name or not name or not email or not password:
+        if not company_name or not company_rut or not name or not email or not password:
             flash("Completa todos los campos obligatorios.", "danger")
+            return render_template("register.html")
+
+        if not is_valid_rut(company_rut):
+            flash("Ingresa un RUT de empresa válido (ej: 12.345.678-5).", "danger")
+            return render_template("register.html")
+
+        rut_formatted = format_rut(company_rut)
+
+        if Company.query.filter_by(rut=rut_formatted).first():
+            flash("Ya existe una empresa registrada con ese RUT.", "danger")
             return render_template("register.html")
 
         if User.query.filter_by(email=email).first():
             flash("Ya existe una cuenta con ese correo.", "danger")
             return render_template("register.html")
 
-        company = Company(name=company_name)
+        company = Company(name=company_name, rut=rut_formatted)
         db.session.add(company)
         db.session.flush()
 
@@ -432,24 +482,52 @@ def admin_dashboard():
 def create_company():
     if request.method == "POST":
         company_name = request.form.get("company_name", "").strip()
+        company_rut = request.form.get("company_rut", "").strip()
+        admin_name = request.form.get("admin_name", "").strip()
+        admin_email = request.form.get("admin_email", "").strip().lower()
+        admin_password = request.form.get("admin_password", "")
 
-        if not company_name:
-            flash("Debes ingresar el nombre de la empresa.", "danger")
+        if not company_name or not company_rut or not admin_name or not admin_email or not admin_password:
+            flash("Completa todos los campos obligatorios.", "danger")
             return render_template("create_company.html")
 
-        existing = Company.query.filter(
+        if not is_valid_rut(company_rut):
+            flash("Ingresa un RUT de empresa válido (ej: 12.345.678-5).", "danger")
+            return render_template("create_company.html")
+
+        rut_formatted = format_rut(company_rut)
+
+        existing_company = Company.query.filter(
             db.func.lower(Company.name) == company_name.lower()
         ).first()
 
-        if existing:
+        if existing_company:
             flash("Ya existe una empresa con ese nombre.", "danger")
             return render_template("create_company.html")
 
-        company = Company(name=company_name, is_active=True)
+        if Company.query.filter_by(rut=rut_formatted).first():
+            flash("Ya existe una empresa registrada con ese RUT.", "danger")
+            return render_template("create_company.html")
+
+        if User.query.filter_by(email=admin_email).first():
+            flash("Ya existe una cuenta con ese correo.", "danger")
+            return render_template("create_company.html")
+
+        company = Company(name=company_name, rut=rut_formatted, is_active=True)
         db.session.add(company)
+        db.session.flush()
+
+        admin_user = User(
+            company_id=company.id,
+            name=admin_name,
+            email=admin_email,
+            role="admin",
+        )
+        admin_user.set_password(admin_password)
+        db.session.add(admin_user)
         db.session.commit()
 
-        flash(f'Empresa "{company.name}" creada correctamente.', "success")
+        flash(f'Empresa "{company.name}" creada correctamente, junto con su cuenta de administrador.', "success")
         return redirect(url_for("admin_dashboard"))
 
     return render_template("create_company.html")

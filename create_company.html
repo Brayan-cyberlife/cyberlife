@@ -27,6 +27,10 @@
         <label for="company_name">Nombre de la Empresa</label>
         <input type="text" id="company_name" name="company_name" placeholder="Ej. Cyber Corp S.A." required style="width: 100%;">
       </div>
+      <div class="auth-field" style="margin-top: 16px;">
+        <label for="company_rut">RUT de la Empresa</label>
+        <input type="text" id="company_rut" name="company_rut" placeholder="Ej. 76.123.456-7" maxlength="12" inputmode="numeric" autocomplete="off" required style="width: 100%;">
+      </div>
     </div>
 
     <p class="panel-title" style="margin-top: 32px; margin-bottom: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
@@ -59,5 +63,28 @@
 
   </form>
 </div>
+
+<script>
+  (function () {
+    var input = document.getElementById('company_rut');
+    if (!input) return;
+    input.addEventListener('input', function (e) {
+      var clean = e.target.value.replace(/[^0-9kK]/g, '').toUpperCase();
+      if (clean.length > 1) {
+        var dv = clean.slice(-1);
+        var body = clean.slice(0, -1);
+        var formatted = '';
+        while (body.length > 3) {
+          formatted = '.' + body.slice(-3) + formatted;
+          body = body.slice(0, -3);
+        }
+        formatted = body + formatted;
+        e.target.value = formatted + '-' + dv;
+      } else {
+        e.target.value = clean;
+      }
+    });
+  })();
+</script>
 
 {% endblock %}

@@ -14,6 +14,7 @@ class Company(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
+    rut = db.Column(db.String(20), unique=True, nullable=False)
     created_at = db.Column(db.Date, default=date.today)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
