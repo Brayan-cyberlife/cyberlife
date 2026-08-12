@@ -1,41 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Perfil · Cyber Life{% endblock %}
 {% block content %}
-<div class="page-header">
+<div class="page-header account-page-header">
   <div>
+    <div class="account-kicker">CUENTA · 01</div>
     <h1 class="page-title">Perfil</h1>
     <p class="page-subtitle">Administra la información básica de tu cuenta.</p>
   </div>
 </div>
 
-<div class="account-grid">
-  <section class="account-card account-card-full">
-    <h2 class="account-card-title">Información personal</h2>
-    <p class="account-card-subtitle">Estos datos se utilizan para identificar tu cuenta dentro de Cyber Life.</p>
-
-    <form method="POST" class="account-form">
-      <div class="auth-field">
-        <label for="name">Nombre</label>
-        <input id="name" name="name" type="text" value="{{ current_user.name }}" required>
-      </div>
-
-      <div class="auth-field">
-        <label for="email">Correo electrónico</label>
-        <input id="email" name="email" type="email" value="{{ current_user.email }}" required>
-      </div>
-
-      <div class="auth-field">
-        <label for="company">Empresa</label>
-        <input id="company" type="text" value="{{ current_user.company.name }}" disabled>
-      </div>
-
-      <div class="auth-field">
-        <label for="role">Rol</label>
-        <input id="role" type="text" value="{{ 'Super administrador' if current_user.is_super_admin else current_user.role|capitalize }}" disabled>
-      </div>
-
-      <button type="submit" class="btn">Guardar cambios</button>
+<div class="account-layout">
+  <section class="account-card account-profile-main">
+    <div class="account-section-head">
+      <div class="account-section-number">01</div>
+      <div><h2 class="account-card-title">Información personal</h2><p class="account-card-subtitle">Estos datos se utilizan para identificar tu cuenta dentro de Cyber Life.</p></div>
+    </div>
+    <form method="POST" class="account-form account-form-grid">
+      <div class="account-field"><label for="name">Nombre</label><input id="name" name="name" type="text" value="{{ current_user.name }}" required></div>
+      <div class="account-field"><label for="email">Correo electrónico</label><input id="email" name="email" type="email" value="{{ current_user.email }}" required></div>
+      <div class="account-field"><label for="company">Empresa</label><input id="company" type="text" value="{{ current_user.company.name }}" disabled></div>
+      <div class="account-field"><label for="role">Rol</label><input id="role" type="text" value="{{ 'Super administrador' if current_user.is_super_admin else current_user.role|capitalize }}" disabled></div>
+      <div class="account-form-actions"><button type="submit" class="btn">Guardar cambios <span>→</span></button></div>
     </form>
   </section>
+
+  <aside class="account-card account-status-card">
+    <div class="account-section-number">02</div>
+    <div class="account-status-icon">◉</div>
+    <div class="account-status-label">ESTADO DE CUENTA</div>
+    <div class="account-status-value">{{ "Activa" if current_user.company.is_active else "Inactiva" }}</div>
+    <div class="account-status-line"></div>
+    <p>Tu cuenta está vinculada a <strong>{{ current_user.company.name }}</strong>.</p>
+    <div class="account-mini-row"><span>Rol</span><strong>{{ "Super administrador" if current_user.is_super_admin else current_user.role|capitalize }}</strong></div>
+  </aside>
 </div>
 {% endblock %}

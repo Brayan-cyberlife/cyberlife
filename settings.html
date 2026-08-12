@@ -1,56 +1,34 @@
 {% extends "base.html" %}
 {% block title %}Ajustes · Cyber Life{% endblock %}
 {% block content %}
-<div class="page-header">
+<div class="page-header account-page-header">
   <div>
+    <div class="account-kicker">CUENTA · 02</div>
     <h1 class="page-title">Ajustes</h1>
     <p class="page-subtitle">Configura la seguridad y las preferencias de tu cuenta.</p>
   </div>
 </div>
 
-<div class="account-grid">
+<div class="account-layout account-settings-layout">
   <section class="account-card">
-    <h2 class="account-card-title">Seguridad</h2>
-    <p class="account-card-subtitle">Cambia tu contraseña de acceso.</p>
-
+    <div class="account-section-head"><div class="account-section-number">01</div><div><h2 class="account-card-title">Seguridad</h2><p class="account-card-subtitle">Cambia tu contraseña de acceso.</p></div></div>
     <form method="POST" class="account-form">
-      <div class="auth-field">
-        <label for="current_password">Contraseña actual</label>
-        <input id="current_password" name="current_password" type="password" autocomplete="current-password" required>
-      </div>
-
-      <div class="auth-field">
-        <label for="new_password">Nueva contraseña</label>
-        <input id="new_password" name="new_password" type="password" minlength="8" autocomplete="new-password" required>
-      </div>
-
-      <div class="auth-field">
-        <label for="confirm_password">Confirmar nueva contraseña</label>
-        <input id="confirm_password" name="confirm_password" type="password" minlength="8" autocomplete="new-password" required>
-      </div>
-
-      <button type="submit" class="btn">Actualizar contraseña</button>
+      <div class="account-field"><label for="current_password">Contraseña actual</label><input id="current_password" name="current_password" type="password" autocomplete="current-password" required></div>
+      <div class="account-field"><label for="new_password">Nueva contraseña</label><input id="new_password" name="new_password" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div class="account-field"><label for="confirm_password">Confirmar nueva contraseña</label><input id="confirm_password" name="confirm_password" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div class="password-hint"><span>✓</span> Mínimo 8 caracteres</div>
+      <div class="account-form-actions"><button type="submit" class="btn">Actualizar contraseña <span>→</span></button></div>
     </form>
   </section>
 
   <section class="account-card">
-    <h2 class="account-card-title">Cuenta</h2>
-    <p class="account-card-subtitle">Información de tu organización.</p>
-
-    <dl class="account-meta">
-      <dt>Empresa</dt>
-      <dd>{{ current_user.company.name }}</dd>
-
-      <dt>Estado</dt>
-      <dd><span class="account-badge">{{ "Activa" if current_user.company.is_active else "Inactiva" }}</span></dd>
-
-      <dt>Rol</dt>
-      <dd>{{ "Super administrador" if current_user.is_super_admin else current_user.role|capitalize }}</dd>
+    <div class="account-section-head"><div class="account-section-number">02</div><div><h2 class="account-card-title">Cuenta</h2><p class="account-card-subtitle">Información de tu organización.</p></div></div>
+    <dl class="account-meta account-meta-modern">
+      <div><dt>Empresa</dt><dd>{{ current_user.company.name }}</dd></div>
+      <div><dt>Estado</dt><dd><span class="account-badge">{{ "Activa" if current_user.company.is_active else "Inactiva" }}</span></dd></div>
+      <div><dt>Rol</dt><dd>{{ "Super administrador" if current_user.is_super_admin else current_user.role|capitalize }}</dd></div>
     </dl>
-
-    <div class="account-note" style="margin-top:20px;">
-      Tus preferencias generales podrán ampliarse aquí a medida que incorporemos nuevas funciones.
-    </div>
+    <div class="account-note">Tus preferencias generales podrán ampliarse aquí a medida que incorporemos nuevas funciones.</div>
   </section>
 </div>
 {% endblock %}

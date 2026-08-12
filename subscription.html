@@ -1,41 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Suscripción · Cyber Life{% endblock %}
 {% block content %}
-<div class="page-header">
+<div class="page-header account-page-header">
   <div>
+    <div class="account-kicker">CUENTA · 03</div>
     <h1 class="page-title">Suscripción</h1>
     <p class="page-subtitle">Consulta el plan asociado a tu cuenta de Cyber Life.</p>
   </div>
 </div>
 
-<div class="account-grid">
-  <section class="account-card account-card-full">
-    <div class="subscription-plan">
-      <div>
-        <h2 class="subscription-plan-name">Plan Free</h2>
-        <p class="subscription-plan-label">Plan actual de Cyber Life</p>
-      </div>
-      <span class="account-badge">Activo</span>
-    </div>
+<div class="subscription-layout">
+  <section class="subscription-hero account-card">
+    <div class="subscription-topline"><span class="subscription-code">PLAN ACTUAL</span><span class="account-badge">Activo</span></div>
+    <div class="subscription-hero-content"><div><div class="subscription-plan-name">Plan Free</div><p class="subscription-plan-label">La base para comenzar a gestionar tu inventario TI.</p></div><div class="subscription-price"><strong>$0</strong><span> / siempre</span></div></div>
+    <div class="subscription-company"><span>EMPRESA</span><strong>{{ current_user.company.name }}</strong></div>
+  </section>
 
-    <dl class="account-meta">
-      <dt>Empresa</dt>
-      <dd>{{ current_user.company.name }}</dd>
-
-      <dt>Estado</dt>
-      <dd>Servicio activo</dd>
-    </dl>
-
-    <ul class="subscription-features">
-      <li>Gestión de activos TI</li>
-      <li>Panel de inventario</li>
-      <li>Alertas de vencimiento</li>
-      <li>Exportación CSV</li>
+  <section class="account-card subscription-features-card">
+    <div class="account-section-head"><div class="account-section-number">01</div><div><h2 class="account-card-title">Incluido en tu plan</h2><p class="account-card-subtitle">Herramientas disponibles actualmente.</p></div></div>
+    <ul class="subscription-features subscription-features-modern">
+      <li><span>✓</span><div><strong>Gestión de activos TI</strong><small>Administra equipos, licencias y servicios.</small></div></li>
+      <li><span>✓</span><div><strong>Panel de inventario</strong><small>Consulta el estado general de tus activos.</small></div></li>
+      <li><span>✓</span><div><strong>Alertas de vencimiento</strong><small>Identifica garantías y licencias próximas a vencer.</small></div></li>
+      <li><span>✓</span><div><strong>Exportación CSV</strong><small>Lleva tus datos de inventario a otros sistemas.</small></div></li>
     </ul>
+  </section>
 
-    <div class="account-note" style="margin-top:22px;">
-      La gestión de planes, pagos y facturación se habilitará en una futura versión de Cyber Life.
-    </div>
+  <section class="account-card subscription-future-card">
+    <div class="account-section-number">02</div>
+    <div class="future-icon">◇</div>
+    <h2 class="account-card-title">Planes y facturación</h2>
+    <p class="account-card-subtitle">Estamos preparando nuevas opciones para Cyber Life.</p>
+    <div class="account-note">La gestión de planes, pagos y facturación se habilitará en una futura versión. Tu servicio actual continuará activo sin cambios.</div>
   </section>
 </div>
 {% endblock %}
