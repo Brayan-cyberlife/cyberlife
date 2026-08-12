@@ -23,7 +23,7 @@
 
   <section class="account-card">
     <div class="account-section-head"><div class="account-section-number">02</div><div><h2 class="account-card-title">Cuenta</h2><p class="account-card-subtitle">Información de tu organización.</p></div></div>
-    <dl class="account-meta account-meta-modern">
+    <dl class="account-meta-modern">
       <div><dt>Empresa</dt><dd>{{ current_user.company.name }}</dd></div>
       <div><dt>Estado</dt><dd><span class="account-badge">{{ "Activa" if current_user.company.is_active else "Inactiva" }}</span></dd></div>
       <div><dt>Rol</dt><dd>{{ "Super administrador" if current_user.is_super_admin else current_user.role|capitalize }}</dd></div>

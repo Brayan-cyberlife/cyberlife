@@ -12,10 +12,10 @@
 <div class="shell">
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-mark">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Cyber Life" class="brand-logo">
-      </div>
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Cyber Life" class="brand-logo">
+      <span class="brand-role">ASSET MANAGER</span>
     </div>
+
     <nav class="nav">
       <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">
         <span class="nav-ico">◧</span> Panel
@@ -35,14 +35,12 @@
       </a>
       {% endif %}
 
-      <details class="account-menu"
-        {% if request.endpoint in ['profile', 'settings', 'subscription'] %}open{% endif %}>
+      <details class="account-menu" {% if request.endpoint in ['profile', 'settings', 'subscription'] %}open{% endif %}>
         <summary class="account-summary">
           <span class="nav-ico">◉</span>
           <span>Cuenta</span>
           <span class="account-chevron">⌄</span>
         </summary>
-
         <div class="account-subnav">
           <a href="{{ url_for('profile') }}" class="{{ 'active' if request.endpoint == 'profile' }}">
             <span class="subnav-ico">◌</span> Perfil
@@ -56,10 +54,11 @@
         </div>
       </details>
     </nav>
+
     <div class="sidebar-foot">
-      <div class="mono" style="color:var(--text);margin-bottom:2px;">{{ current_user.company.name }}</div>
-      <div class="mono" style="margin-bottom:10px;">{{ current_user.name }}</div>
-      <a href="{{ url_for('logout') }}" class="mono" style="color:var(--text-dim);">⎋ Cerrar sesión</a>
+      <div class="mono sidebar-company">{{ current_user.company.name }}</div>
+      <div class="mono sidebar-user">{{ current_user.name }}</div>
+      <a href="{{ url_for('logout') }}" class="mono sidebar-logout">⎋ Cerrar sesión</a>
     </div>
   </aside>
 
