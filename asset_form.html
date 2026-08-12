@@ -1,79 +1,142 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Editar' if asset else 'Nuevo' }} activo · Cyber Life{% endblock %}
-{% block content %}
+{% block title %}{{ 'Editar activo' if asset else 'Agregar activo' }} · Cyber Life{% endblock %}
 
-<div class="page-header">
-  <div>
-    <h1 class="page-title">{{ 'Editar activo' if asset else 'Agregar activo' }}</h1>
-    <div class="page-subtitle">Completa los datos del equipo, licencia o servicio</div>
+{% block content %}
+<div class="asset-page">
+  <div class="page-header asset-page-header">
+    <div>
+      <div class="asset-eyebrow">GESTIÓN DE INVENTARIO</div>
+      <h1 class="page-title">{{ 'Editar activo' if asset else 'Agregar activo' }}</h1>
+      <div class="page-subtitle">
+        {{ 'Actualiza la información y el estado de este activo.' if asset else 'Registra un equipo, licencia, servicio o suscripción en tu inventario.' }}
+      </div>
+    </div>
+    <a href="{{ url_for('list_assets') }}" class="btn btn-ghost asset-back-btn">← Volver a activos</a>
+  </div>
+
+  <div class="asset-form-layout">
+    <form class="asset-form" method="post">
+
+      <section class="asset-section asset-section-identification">
+        <div class="asset-section-heading">
+          <div class="asset-section-number">01</div>
+          <div>
+            <h2>Identificación</h2>
+            <p>Información principal para reconocer rápidamente el activo.</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field field-wide">
+            <label for="asset-name">Nombre del activo <span>*</span></label>
+            <input id="asset-name" type="text" name="name" required value="{{ asset.name if asset else '' }}" placeholder="Ej: Laptop Dell Latitude 5440">
+            <small>Usa un nombre claro y fácil de identificar.</small>
+          </div>
+          <div class="field">
+            <label for="asset-category">Categoría <span>*</span></label>
+            <select id="asset-category" name="category">
+              {% for c in categories %}
+                <option value="{{ c }}" {{ 'selected' if asset and asset.category == c }}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="asset-status">Estado actual <span>*</span></label>
+            <select id="asset-status" name="status">
+              {% for s in statuses %}
+                <option value="{{ s }}" {{ 'selected' if asset and asset.status == s }}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="asset-section asset-section-management">
+        <div class="asset-section-heading">
+          <div class="asset-section-number">02</div>
+          <div>
+            <h2>Gestión y responsable</h2>
+            <p>Identifica quién suministra y quién tiene a cargo el activo.</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="asset-vendor">Proveedor</label>
+            <input id="asset-vendor" type="text" name="vendor" value="{{ asset.vendor if asset else '' }}" placeholder="Ej: Dell, Microsoft, Fortinet">
+          </div>
+          <div class="field">
+            <label for="asset-assigned">Asignado a</label>
+            <input id="asset-assigned" type="text" name="assigned_to" value="{{ asset.assigned_to if asset else '' }}" placeholder="Ej: Marcela Rojas">
+          </div>
+          <div class="field field-wide">
+            <label for="asset-serial">N° de serie / licencia</label>
+            <input id="asset-serial" type="text" name="serial_number" value="{{ asset.serial_number if asset else '' }}" placeholder="Ej: SN-ABC12345 / LIC-2026-001">
+            <small>Ideal para equipos físicos, licencias y suscripciones.</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="asset-section asset-section-lifecycle">
+        <div class="asset-section-heading">
+          <div class="asset-section-number">03</div>
+          <div>
+            <h2>Compra y ciclo de vida</h2>
+            <p>Controla el valor del activo y sus fechas importantes.</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="asset-cost">Costo</label>
+            <div class="input-prefix">
+              <span>$</span>
+              <input id="asset-cost" type="number" step="1" min="0" name="cost" value="{{ asset.cost if asset else '' }}" placeholder="0">
+            </div>
+          </div>
+          <div class="field">
+            <label for="asset-purchase">Fecha de compra</label>
+            <input id="asset-purchase" type="date" name="purchase_date" value="{{ asset.purchase_date.isoformat() if asset and asset.purchase_date else '' }}">
+          </div>
+          <div class="field field-wide">
+            <label for="asset-expiration">Fecha de vencimiento / garantía</label>
+            <input id="asset-expiration" type="date" name="expiration_date" value="{{ asset.expiration_date.isoformat() if asset and asset.expiration_date else '' }}">
+            <small>Se utiliza para alertas de garantía, licencia o suscripción.</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="asset-section asset-section-notes">
+        <div class="asset-section-heading">
+          <div class="asset-section-number">04</div>
+          <div>
+            <h2>Notas y observaciones</h2>
+            <p>Añade información útil para futuras consultas.</p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="asset-notes">Notas</label>
+          <textarea id="asset-notes" name="notes" rows="5" placeholder="Ej: Equipo entregado con cargador original. Garantía extendida hasta 2028.">{{ asset.notes if asset else '' }}</textarea>
+        </div>
+      </section>
+
+      <div class="asset-form-actions">
+        <a href="{{ url_for('list_assets') }}" class="btn btn-ghost">Cancelar</a>
+        <button type="submit" class="btn asset-save-btn">
+          {{ 'Guardar cambios' if asset else 'Agregar activo' }} <span>→</span>
+        </button>
+      </div>
+    </form>
+
+    <aside class="asset-side-card">
+      <div class="asset-side-icon">＋</div>
+      <div class="asset-side-label">NUEVO REGISTRO</div>
+      <h3>Un inventario claro empieza aquí.</h3>
+      <p>Mantén organizada la información de tus equipos, licencias y servicios para saber qué tienes, dónde está y cuándo requiere atención.</p>
+
+      <div class="asset-side-check"><span>✓</span><div><strong>Identificación</strong><small>Nombre, categoría y estado</small></div></div>
+      <div class="asset-side-check"><span>✓</span><div><strong>Responsabilidad</strong><small>Proveedor, usuario y licencia</small></div></div>
+      <div class="asset-side-check"><span>✓</span><div><strong>Seguimiento</strong><small>Costos y fechas de vencimiento</small></div></div>
+
+      <div class="asset-side-tip"><span>●</span> Los campos marcados con * son obligatorios.</div>
+    </aside>
   </div>
 </div>
-
-<form class="panel" method="post">
-  <div class="form-grid">
-    <div class="field full">
-      <label>Nombre del activo</label>
-      <input type="text" name="name" required value="{{ asset.name if asset else '' }}" placeholder="Ej: Laptop Dell Latitude 5440">
-    </div>
-
-    <div class="field">
-      <label>Categoría</label>
-      <select name="category">
-        {% for c in categories %}
-          <option value="{{ c }}" {{ 'selected' if asset and asset.category == c }}>{{ c }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Estado</label>
-      <select name="status">
-        {% for s in statuses %}
-          <option value="{{ s }}" {{ 'selected' if asset and asset.status == s }}>{{ s }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Proveedor</label>
-      <input type="text" name="vendor" value="{{ asset.vendor if asset else '' }}" placeholder="Ej: Dell, Microsoft, Fortinet">
-    </div>
-
-    <div class="field">
-      <label>Asignado a</label>
-      <input type="text" name="assigned_to" value="{{ asset.assigned_to if asset else '' }}" placeholder="Ej: Marcela Rojas">
-    </div>
-
-    <div class="field">
-      <label>N° de serie / licencia</label>
-      <input type="text" name="serial_number" value="{{ asset.serial_number if asset else '' }}">
-    </div>
-
-    <div class="field">
-      <label>Costo</label>
-      <input type="number" step="1" name="cost" value="{{ asset.cost if asset else '' }}" placeholder="0">
-    </div>
-
-    <div class="field">
-      <label>Fecha de compra</label>
-      <input type="date" name="purchase_date" value="{{ asset.purchase_date.isoformat() if asset and asset.purchase_date else '' }}">
-    </div>
-
-    <div class="field">
-      <label>Fecha de vencimiento (garantía / licencia)</label>
-      <input type="date" name="expiration_date" value="{{ asset.expiration_date.isoformat() if asset and asset.expiration_date else '' }}">
-    </div>
-
-    <div class="field full">
-      <label>Notas</label>
-      <textarea name="notes" rows="3">{{ asset.notes if asset else '' }}</textarea>
-    </div>
-  </div>
-
-  <div class="form-actions">
-    <button type="submit" class="btn">{{ 'Guardar cambios' if asset else 'Agregar activo' }}</button>
-    <a href="{{ url_for('list_assets') }}" class="btn btn-ghost">Cancelar</a>
-  </div>
-</form>
-
 {% endblock %}
