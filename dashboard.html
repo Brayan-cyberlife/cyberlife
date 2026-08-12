@@ -29,7 +29,8 @@
   </div>
 </div>
 
-<div class="panel">
+<div class="dashboard-grid">
+  <section class="panel">
   <h2 class="panel-title">Próximos vencimientos</h2>
   {% if upcoming %}
     {% for a in upcoming %}
@@ -52,9 +53,9 @@
       No hay vencimientos próximos. Todo en orden.
     </div>
   {% endif %}
-</div>
+  </section>
 
-<div class="panel">
+  <section class="panel">
   <h2 class="panel-title">Activos por categoría</h2>
   {% if by_category %}
     {% for cat, count in by_category.items() %}
@@ -69,13 +70,14 @@
   {% else %}
     <div class="empty-state"><span class="mono">—</span>Aún no hay activos registrados.</div>
   {% endif %}
+  </section>
 </div>
 
-<div class="panel">
+<section class="panel inventory-value-panel">
   <h2 class="panel-title">Valor total del inventario</h2>
   <div class="card-value" style="font-size:28px;">
     ${{ "{:,.0f}".format(total_cost).replace(",", ".") }}
   </div>
-</div>
+</section>
 
 {% endblock %}

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 150" fill="none">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(10 15)">
+    <path d="M60 7 108 35v56l-48 28-48-28V35L60 7Z" stroke="#8fe030" stroke-width="3" filter="url(#glow)"/>
+    <path d="M25 66h16l6-22 9 48 10-35 8 20 8-25 7 24h14" stroke="#9ef513" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+    <circle cx="103" cy="77" r="4.5" fill="#9ef513" filter="url(#glow)"/>
+  </g>
+  <text x="145" y="70" fill="#f4f8f2" font-family="Inter,Arial,sans-serif" font-size="42" font-weight="800" letter-spacing="1.5">CYBER</text>
+  <text x="149" y="111" fill="#f4f8f2" font-family="Inter,Arial,sans-serif" font-size="29" font-weight="500" letter-spacing="15">LIFE</text>
+  <line x1="150" y1="124" x2="415" y2="124" stroke="#8fe030" stroke-width="1" opacity=".55"/>
+  <text x="151" y="142" fill="#7c8c78" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="500" letter-spacing="4.2">INFORMATION TECHNOLOGIES</text>
+</svg>
