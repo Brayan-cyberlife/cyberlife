@@ -119,10 +119,11 @@
   <div class="auth-box">
     <div class="auth-brand">
       <img src="{{ url_for('static', filename='logo.png') }}" alt="Cyber Life">
+      <span>CYBER LIFE</span>
     </div>
 
     <div class="auth-title">Crea tu cuenta</div>
-    <div class="auth-sub">"TU PRIMER PASO HACIA EL FUTURO"</div>
+    <div class="auth-sub">Empieza gratis con datos de ejemplo precargados</div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}

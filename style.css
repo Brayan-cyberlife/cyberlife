@@ -49,150 +49,65 @@ a { color: inherit; text-decoration: none; }
   min-height: 100vh;
 }
 
-/* Sidebar — identidad visual Cyber Life */
+/* Sidebar */
 .sidebar {
-  position: relative;
-  background:
-    radial-gradient(circle at 50% 10%, rgba(143, 224, 48, 0.075), transparent 30%),
-    linear-gradient(180deg, #0b110b 0%, #080d08 100%);
+  background: var(--surface);
   border-right: 1px solid var(--border);
-  padding: 18px 14px 16px;
+  padding: 24px 18px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  min-height: 100vh;
-  overflow: hidden;
-}
-
-.sidebar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(143, 224, 48, 0.025), transparent 24%, transparent 76%, rgba(143, 224, 48, 0.018));
+  gap: 32px;
 }
 
 .brand {
-  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 198px;
-  padding: 8px 4px 14px;
-  border-bottom: 1px solid rgba(143, 224, 48, 0.14);
-  z-index: 1;
-}
-
-.brand::after {
-  content: "";
-  position: absolute;
-  left: 18%;
-  right: 18%;
-  bottom: 9px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(143, 224, 48, 0.42), transparent);
-  box-shadow: 0 0 10px rgba(143, 224, 48, 0.2);
-}
-
-.brand-mark {
-  position: relative;
-  width: 190px;
-  height: 190px;
-  display: grid;
-  place-items: center;
-}
-
-.brand-mark::before {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(143, 224, 48, 0.11), transparent 67%);
-  filter: blur(9px);
-  pointer-events: none;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
 }
 
 .brand-logo {
-  position: relative;
-  width: 184px;
-  height: 184px;
-  display: block;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  object-fit: contain;
-  box-shadow:
-    0 0 12px rgba(143, 224, 48, 0.22),
-    0 0 34px rgba(143, 224, 48, 0.10);
+  object-fit: cover;
+  box-shadow: 0 0 10px var(--primary-dim);
   flex-shrink: 0;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.brand-logo:hover {
-  transform: scale(1.025);
-  box-shadow:
-    0 0 16px rgba(143, 224, 48, 0.30),
-    0 0 42px rgba(143, 224, 48, 0.14);
-}
-
-/* El logo ya contiene el nombre CYBER LIFE; no se muestra texto duplicado. */
-.brand-text,
-.brand-name,
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { color: var(--text); }
 .brand-tagline {
-  display: none;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 9.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.nav {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  z-index: 1;
-}
+.nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 
 .nav a {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-height: 42px;
+  gap: 10px;
   padding: 10px 12px;
-  border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text-dim);
   font-size: 13.5px;
-  font-weight: 600;
-  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
 }
 
-.nav a:hover {
-  background: rgba(143, 224, 48, 0.055);
-  border-color: rgba(143, 224, 48, 0.10);
-  color: var(--text);
-}
+.nav a:hover { background: var(--surface-2); color: var(--text); }
+.nav a.active { background: var(--surface-2); color: var(--primary); }
+.nav-ico { width: 16px; text-align: center; font-size: 13px; opacity: 0.9; }
 
-.nav a.active {
-  background: linear-gradient(90deg, rgba(143, 224, 48, 0.12), rgba(143, 224, 48, 0.035));
-  border-color: rgba(143, 224, 48, 0.18);
-  color: var(--primary);
-  box-shadow: inset 3px 0 0 var(--primary), 0 0 18px rgba(143, 224, 48, 0.035);
-}
-
-.nav-ico {
-  width: 18px;
-  text-align: center;
-  font-size: 14px;
-  color: currentColor;
-  opacity: 0.95;
-}
-
-.sidebar-foot {
-  position: relative;
-  color: var(--text-dim);
-  border-top: 1px solid var(--border);
-  padding: 14px 10px 0;
-  z-index: 1;
-}
-
+.sidebar-foot { color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 14px; }
 .sidebar-foot a:hover { color: var(--text); }
 .mono { font-family: var(--font-display); font-size: 11px; letter-spacing: 0.04em; }
 
@@ -456,35 +371,409 @@ tr:hover td { background: var(--surface-2); }
   justify-content: center;
   min-height: 100vh;
   width: 100vw;
-  padding: 20px;
+  padding: 28px 20px;
   position: relative;
   z-index: 2;
 }
 
-.auth-box {
+/* ============================================================
+   LOGIN — diseño grande y separado del registro
+   ============================================================ */
+
+.login-page .auth-box {
   width: 100%;
-  max-width: 380px;
-  padding: 30px;
-  background: rgba(12, 17, 12, 0.85);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 0 30px rgba(143, 224, 48, 0.08);
-  backdrop-filter: blur(8px);
+  max-width: 600px;
+  padding: 48px 46px 38px;
+  background: linear-gradient(145deg, rgba(12,17,12,.92), rgba(5,8,5,.88));
+  border: 1px solid rgba(143,224,48,.48);
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(143,224,48,.04),
+    0 0 35px rgba(143,224,48,.09),
+    0 24px 80px rgba(0,0,0,.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 10;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-page .auth-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(143,224,48,.055),
+    transparent 30%,
+    transparent 70%,
+    rgba(143,224,48,.025)
+  );
+  pointer-events: none;
+}
+
+.login-page .auth-box::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  box-shadow: 0 0 12px rgba(143,224,48,.6);
+}
+
+.login-page .auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 22px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-page .auth-logo-wrap {
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.login-page .auth-logo-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 18px rgba(143,224,48,.14),
+    0 0 48px rgba(143,224,48,.07);
+}
+
+.login-page .auth-brand img {
+  width: 96px;
+  height: 96px;
+  display: block;
+  border-radius: 50%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(143,224,48,.18));
+}
+
+.login-page .auth-title {
+  font-family: var(--font-display);
+  color: var(--primary);
+  font-size: 25px;
+  line-height: 1.2;
+  font-weight: 600;
+  margin-bottom: 5px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.login-page .auth-sub {
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-page .auth-form {
+  position: relative;
+  z-index: 1;
+}
+
+.login-page .auth-field {
+  margin-bottom: 20px;
+}
+
+.login-page .auth-field label {
+  display: block;
+  font-size: 11px;
+  color: var(--primary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-family: var(--font-display);
+}
+
+.login-page .auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-page .auth-input-icon {
+  position: absolute;
+  left: 15px;
+  z-index: 2;
+  width: 20px;
+  color: var(--primary);
+  font-size: 20px;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+}
+
+.login-page .auth-field input {
+  width: 100%;
+  height: 54px;
+  padding: 0 48px;
+  background: rgba(5,9,5,.82);
+  border: 1px solid rgba(143,224,48,.42);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+}
+
+.login-page .auth-field input::placeholder {
+  color: #667062;
+}
+
+.login-page .auth-field input:hover {
+  border-color: rgba(143,224,48,.62);
+}
+
+.login-page .auth-field input:focus {
+  border-color: var(--primary);
+  background: rgba(8,13,8,.92);
+  box-shadow:
+    0 0 0 2px rgba(143,224,48,.08),
+    0 0 16px rgba(143,224,48,.10);
+}
+
+.login-page .password-toggle {
+  position: absolute;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.login-page .password-toggle:hover {
+  color: var(--primary);
+  background: rgba(143,224,48,.06);
+}
+
+.login-page .auth-submit {
+  width: 100%;
+  min-height: 54px;
+  justify-content: center;
+  margin-top: 6px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.login-page .auth-submit-arrow {
+  font-size: 22px;
+  line-height: 1;
+  margin-left: 7px;
+  transition: transform .15s;
+}
+
+.login-page .auth-submit:hover .auth-submit-arrow {
+  transform: translateX(4px);
+}
+
+.login-page .auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 30px 0 0;
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 12px;
+}
+
+.login-page .auth-divider::before,
+.login-page .auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, transparent, rgba(143,224,48,.45));
+}
+
+.login-page .auth-divider::after {
+  background: linear-gradient(90deg, rgba(143,224,48,.45), transparent);
+}
+
+.login-page .auth-foot {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.login-page .auth-foot a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.login-page .auth-foot a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   REGISTRO — compacto y sin afectar al login
+   ============================================================ */
+
+.register-page .auth-box {
+  width: 100%;
+  max-width: 560px;
+  padding: 34px 42px 34px;
+  background: rgba(12,17,12,.88);
+  border: 1px solid rgba(143,224,48,.35);
+  border-radius: 14px;
+  box-shadow: 0 0 30px rgba(143,224,48,.07);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 10;
 }
 
-.auth-brand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 28px; }
-.auth-brand img { width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 14px var(--primary-dim); }
-.auth-brand span { font-family: var(--font-display); font-weight: 700; font-size: 17px; letter-spacing: 0.02em; }
-.auth-title { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin-bottom: 6px; text-align: center; }
-.auth-sub { color: var(--text-dim); font-size: 13px; text-align: center; margin-bottom: 26px; }
-.auth-field { margin-bottom: 16px; }
-.auth-field label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display); }
-.auth-field input { width: 100%; }
-.auth-submit { width: 100%; justify-content: center; margin-top: 12px; }
-.auth-foot { text-align: center; margin-top: 24px; font-size: 13px; color: var(--text-dim); }
-.auth-foot a { color: var(--primary); }
-.auth-foot a:hover { text-decoration: underline; }
+.register-page .auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.register-page .auth-brand img {
+  width: 96px;
+  height: 96px;
+  display: block;
+  object-fit: contain;
+  border-radius: 50%;
+  box-shadow:
+    0 0 14px rgba(143,224,48,.14),
+    0 0 32px rgba(143,224,48,.06);
+  filter: drop-shadow(0 0 8px rgba(143,224,48,.12));
+}
+
+.register-page .auth-brand span {
+  display: none !important;
+}
+
+.register-page .auth-title {
+  font-family: var(--font-display);
+  color: var(--primary);
+  font-size: 25px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.register-page .auth-sub {
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.register-page .auth-field {
+  margin-bottom: 17px;
+}
+
+.register-page .auth-field label {
+  display: block;
+  font-size: 11px;
+  color: var(--primary);
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-family: var(--font-display);
+}
+
+.register-page .auth-field input {
+  width: 100%;
+  min-height: 50px;
+}
+
+.register-page .auth-submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.register-page .auth-foot {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.register-page .auth-foot a {
+  color: var(--primary);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .auth-container {
+    padding: 18px 14px;
+  }
+
+  .login-page .auth-box {
+    max-width: 480px;
+    padding: 34px 24px 28px;
+    border-radius: 13px;
+  }
+
+  .login-page .auth-logo-wrap {
+    width: 84px;
+    height: 84px;
+  }
+
+  .login-page .auth-title,
+  .register-page .auth-title {
+    font-size: 22px;
+  }
+
+  .register-page .auth-box {
+    max-width: 480px;
+    padding: 28px 24px;
+  }
+
+  .register-page .auth-brand {
+    margin-bottom: 18px;
+  }
+
+  .register-page .auth-brand img {
+    width: 84px;
+    height: 84px;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 641px) {
+  .login-page .auth-box {
+    padding-top: 28px;
+    padding-bottom: 26px;
+  }
+
+  .login-page .auth-logo-wrap {
+    width: 82px;
+    height: 82px;
+  }
+
+  .register-page .auth-brand img {
+    width: 82px;
+    height: 82px;
+  }
+}
 
 @keyframes net-pulse-edge {
   0%, 100% { opacity: 0.22; }
@@ -570,213 +859,3 @@ tr:hover td {
   font-size: 14px;
 }
 
-
-
-/* ==========================================================================
-   CUENTA — menú desplegable de la barra lateral
-   ========================================================================== */
-.account-menu {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-.account-summary {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  color: var(--text-dim);
-  font-size: 13.5px;
-  font-weight: 500;
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-  transition: background .15s, color .15s;
-}
-.account-summary::-webkit-details-marker { display: none; }
-.account-summary::marker { display: none; }
-.account-summary:hover,
-.account-menu[open] .account-summary {
-  background: var(--surface-2);
-  color: var(--text);
-}
-.account-menu[open] .account-summary { color: var(--primary); }
-.account-chevron {
-  margin-left: auto;
-  color: var(--text-dim);
-  transition: transform .15s ease;
-}
-.account-menu[open] .account-chevron {
-  transform: rotate(180deg);
-  color: var(--primary);
-}
-.account-subnav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 3px 0 0 26px;
-  padding-left: 10px;
-  border-left: 1px solid var(--border);
-}
-.account-subnav a {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 5px;
-  color: var(--text-dim);
-  font-size: 12.5px;
-  transition: background .15s, color .15s;
-}
-.account-subnav a:hover {
-  background: var(--surface-2);
-  color: var(--text);
-}
-.account-subnav a.active {
-  background: rgba(143, 224, 48, .08);
-  color: var(--primary);
-}
-.subnav-ico { width: 14px; text-align: center; }
-
-.account-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-.account-card {
-  background: rgba(12, 17, 12, .8);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 22px;
-}
-.account-card-full { grid-column: 1 / -1; }
-.account-card-title {
-  margin: 0 0 6px;
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 600;
-}
-.account-card-subtitle {
-  margin: 0 0 20px;
-  color: var(--text-dim);
-  font-size: 12.5px;
-}
-.account-meta {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 10px 18px;
-  margin: 0;
-}
-.account-meta dt {
-  color: var(--text-dim);
-  font-family: var(--font-display);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
-.account-meta dd {
-  margin: 0;
-  color: var(--text);
-  font-size: 13px;
-}
-.account-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 9px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--primary);
-  background: rgba(143, 224, 48, .06);
-  font-family: var(--font-display);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
-.account-form { max-width: 620px; }
-.account-form .auth-field { margin-bottom: 18px; }
-.account-note {
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: rgba(143, 224, 48, .035);
-  color: var(--text-dim);
-  font-size: 12px;
-  line-height: 1.6;
-}
-.subscription-plan {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 18px;
-}
-.subscription-plan-name {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 22px;
-}
-.subscription-plan-label {
-  margin: 4px 0 0;
-  color: var(--text-dim);
-  font-size: 12px;
-}
-.subscription-features {
-  display: grid;
-  gap: 8px;
-  margin: 18px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.subscription-features li {
-  color: var(--text-dim);
-  font-size: 13px;
-}
-.subscription-features li::before {
-  content: "✓";
-  color: var(--primary);
-  margin-right: 8px;
-}
-@media (max-width: 760px) {
-  .account-grid { grid-template-columns: 1fr; }
-  .account-card-full { grid-column: auto; }
-  .account-meta { grid-template-columns: 1fr; gap: 4px; }
-  .account-meta dd { margin-bottom: 8px; }
-  .subscription-plan {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
-/* Sidebar responsive */
-@media (max-width: 900px) {
-  .shell { grid-template-columns: 86px 1fr; }
-  .sidebar { padding: 14px 10px; gap: 14px; }
-  .brand { min-height: 82px; padding: 4px 0 10px; }
-  .brand-mark, .brand-logo { width: 68px; height: 68px; }
-  .nav a { justify-content: center; padding: 10px 8px; }
-  .nav a:not(.active) { font-size: 0; }
-  .nav a .nav-ico { font-size: 15px; }
-  .account-summary { justify-content: center; padding: 10px 8px; }
-  .account-summary > span:not(.nav-ico) { display: none; }
-  .account-chevron { display: none; }
-  .account-subnav { margin-left: 0; padding-left: 0; border-left: 0; }
-  .account-subnav a { justify-content: center; padding: 8px; }
-  .account-subnav a { font-size: 0; }
-  .account-subnav .subnav-ico { font-size: 13px; }
-  .sidebar-foot { display: none; }
-  .content { padding: 26px 24px; }
-}
-
-@media (max-width: 560px) {
-  .shell { grid-template-columns: 1fr; }
-  .sidebar { position: relative; min-height: auto; border-right: 0; border-bottom: 1px solid var(--border); padding: 10px 12px; }
-  .brand { min-height: 70px; }
-  .brand-mark, .brand-logo { width: 62px; height: 62px; }
-  .nav { flex-direction: row; flex-wrap: wrap; }
-  .nav a { flex: 1 1 auto; min-width: 42px; }
-  .account-menu { flex: 1 1 100%; }
-  .account-subnav { flex-direction: row; }
-  .content { padding: 22px 16px; }
-}
