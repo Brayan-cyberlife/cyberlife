@@ -8,3 +8,17 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
+      - key: SECRET_KEY
+        sync: false
+      - key: OWNER_EMAIL
+        sync: false
+      - key: FLOW_API_KEY
+        sync: false
+      - key: FLOW_SECRET_KEY
+        sync: false
+      - key: FLOW_API_URL
+        value: https://sandbox.flow.cl/api
+      - key: FLOW_PLAN_PRO
+        sync: false
+      - key: FLOW_PLAN_BUSINESS
+        sync: false

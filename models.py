@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -7,6 +7,56 @@ db = SQLAlchemy()
 
 CATEGORIES = ["Hardware", "Software", "Licencia", "Servicio/Suscripción"]
 STATUSES = ["Activo", "En reparación", "De baja", "En bodega"]
+
+# ------------------------------------------------------------------
+# Planes de suscripción
+# ------------------------------------------------------------------
+# El "flow_plan_id" se completa una vez que el plan se crea en el
+# panel de Flow (Planes de Suscripción) o vía API — se deja vacío
+# por defecto y se puede configurar con variables de entorno
+# FLOW_PLAN_PRO / FLOW_PLAN_BUSINESS sin tocar este archivo.
+PLANS = {
+    "free": {
+        "label": "Free",
+        "price": 0,
+        "asset_limit": 15,
+        "user_limit": 1,
+        "features": [
+            "Hasta 15 activos",
+            "1 usuario",
+            "Alertas de vencimiento",
+            "Exportación CSV",
+        ],
+    },
+    "pro": {
+        "label": "Pro",
+        "price": 9990,
+        "asset_limit": None,
+        "user_limit": 5,
+        "features": [
+            "Activos ilimitados",
+            "Hasta 5 usuarios",
+            "Alertas de vencimiento",
+            "Exportación CSV",
+            "Soporte por correo",
+        ],
+    },
+    "business": {
+        "label": "Business",
+        "price": 19990,
+        "asset_limit": None,
+        "user_limit": None,
+        "features": [
+            "Activos ilimitados",
+            "Usuarios ilimitados",
+            "Alertas de vencimiento",
+            "Exportación CSV",
+            "Soporte prioritario",
+        ],
+    },
+}
+
+INVOICE_STATUSES = ["pending", "paid", "failed"]
 
 
 class Company(db.Model):
@@ -18,8 +68,22 @@ class Company(db.Model):
     created_at = db.Column(db.Date, default=date.today)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
+    # Suscripción / facturación (Flow.cl)
+    plan = db.Column(db.String(20), default="free", nullable=False)
+    flow_customer_id = db.Column(db.String(80))
+    flow_subscription_id = db.Column(db.String(80))
+    card_registered = db.Column(db.Boolean, default=False, nullable=False)
+    plan_updated_at = db.Column(db.Date)
+
     users = db.relationship("User", backref="company", cascade="all, delete-orphan")
     assets = db.relationship("Asset", backref="company", cascade="all, delete-orphan")
+    invoices = db.relationship(
+        "Invoice", backref="company", cascade="all, delete-orphan",
+        order_by="Invoice.created_at.desc()",
+    )
+
+    def plan_info(self):
+        return PLANS.get(self.plan, PLANS["free"])
 
 
 class User(UserMixin, db.Model):
@@ -88,3 +152,22 @@ class Asset(db.Model):
             "health": self.health(),
             "days_to_expire": self.days_to_expire(),
         }
+
+
+class Invoice(db.Model):
+    """Registro local de cobros de suscripción (se completa vía Flow)."""
+
+    __tablename__ = "invoices"
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=False)
+    plan = db.Column(db.String(20), nullable=False)
+    amount = db.Column(db.Integer, nullable=False, default=0)
+    status = db.Column(db.String(20), nullable=False, default="pending")
+    flow_order = db.Column(db.String(80))
+    flow_token = db.Column(db.String(120))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    paid_at = db.Column(db.DateTime)
+
+    def plan_label(self):
+        return PLANS.get(self.plan, {}).get("label", self.plan)

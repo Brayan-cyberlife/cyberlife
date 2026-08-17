@@ -1,40 +1,91 @@
 {% extends "base.html" %}
 {% block title %}Suscripción · Cyber Life{% endblock %}
 {% block content %}
+{% set company = current_user.company %}
+{% set current_plan = plans.get(company.plan, plans['free']) %}
 <div class="page-header account-page-header">
   <div>
     <div class="account-kicker">CUENTA · 03</div>
     <h1 class="page-title">Suscripción</h1>
-    <p class="page-subtitle">Consulta el plan asociado a tu cuenta de Cyber Life.</p>
+    <p class="page-subtitle">Consulta y cambia el plan asociado a tu cuenta de Cyber Life.</p>
   </div>
 </div>
+
+{% if not flow_configured %}
+<div class="account-note" style="margin-bottom:20px; border-color: var(--warn, #d9a441);">
+  Los pagos aún no están configurados en este ambiente (faltan las credenciales de Flow). Puedes ver los planes, pero los botones de suscripción no funcionarán todavía.
+</div>
+{% endif %}
 
 <div class="subscription-layout">
   <section class="subscription-hero account-card">
     <div class="subscription-topline"><span class="subscription-code">PLAN ACTUAL</span><span class="account-badge">Activo</span></div>
     <div class="subscription-hero-content">
-      <div><div class="subscription-plan-name">Plan Free</div><p class="subscription-plan-label">La base para comenzar a gestionar tu inventario TI.</p></div>
-      <div class="subscription-price"><strong>$0</strong><span> / siempre</span></div>
+      <div><div class="subscription-plan-name">Plan {{ current_plan.label }}</div><p class="subscription-plan-label">{{ current_plan.features[0] if current_plan.features else '' }}</p></div>
+      <div class="subscription-price"><strong>${{ "{:,.0f}".format(current_plan.price).replace(",", ".") }}</strong><span> / {{ 'siempre' if company.plan == 'free' else 'mes' }}</span></div>
     </div>
-    <div class="subscription-company"><span>EMPRESA</span><strong>{{ current_user.company.name }}</strong></div>
+    <div class="subscription-company"><span>EMPRESA</span><strong>{{ company.name }}</strong></div>
   </section>
 
-  <section class="account-card subscription-features-card">
-    <div class="account-section-head"><div class="account-section-number">01</div><div><h2 class="account-card-title">Incluido en tu plan</h2><p class="account-card-subtitle">Herramientas disponibles actualmente.</p></div></div>
-    <ul class="subscription-features subscription-features-modern">
-      <li><span>✓</span><div><strong>Gestión de activos TI</strong><small>Administra equipos, licencias y servicios.</small></div></li>
-      <li><span>✓</span><div><strong>Panel de inventario</strong><small>Consulta el estado general de tus activos.</small></div></li>
-      <li><span>✓</span><div><strong>Alertas de vencimiento</strong><small>Identifica garantías y licencias próximas a vencer.</small></div></li>
-      <li><span>✓</span><div><strong>Exportación CSV</strong><small>Lleva tus datos de inventario a otros sistemas.</small></div></li>
-    </ul>
+  <section class="account-card">
+    <div class="account-section-head"><div class="account-section-number">01</div><div><h2 class="account-card-title">Planes disponibles</h2><p class="account-card-subtitle">Cambia de plan cuando lo necesites.</p></div></div>
+    <div class="plans-grid">
+      {% for key, plan in plans.items() %}
+      <div class="plan-card {{ 'plan-card-current' if key == company.plan }}">
+        {% if key == company.plan %}<span class="plan-current-pill">Plan actual</span>{% endif %}
+        <div class="plan-card-name">{{ plan.label }}</div>
+        <div class="plan-card-price"><strong>${{ "{:,.0f}".format(plan.price).replace(",", ".") }}</strong><span>{{ '/siempre' if key == 'free' else '/mes' }}</span></div>
+        <ul class="plan-card-features">
+          {% for f in plan.features %}<li>✓ {{ f }}</li>{% endfor %}
+        </ul>
+        {% if key == company.plan %}
+          <button class="btn btn-ghost" disabled style="width:100%;">Plan actual</button>
+        {% else %}
+          <form method="post" action="{{ url_for('subscription_choose', plan_key=key) }}">
+            <button type="submit" class="btn" style="width:100%;">
+              {{ 'Volver a Free' if key == 'free' else 'Suscribirme a ' + plan.label }}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
   </section>
 
-  <section class="account-card subscription-future-card">
-    <div class="account-section-number">02</div>
-    <div class="future-icon">◇</div>
-    <h2 class="account-card-title">Planes y facturación</h2>
-    <p class="account-card-subtitle">Estamos preparando nuevas opciones para Cyber Life.</p>
-    <div class="account-note">La gestión de planes, pagos y facturación se habilitará en una futura versión. Tu servicio actual continuará activo sin cambios.</div>
+  <section class="account-card">
+    <div class="account-section-head"><div class="account-section-number">02</div><div><h2 class="account-card-title">Método de pago</h2><p class="account-card-subtitle">Tarjeta registrada en Flow para cobros automáticos.</p></div></div>
+    {% if company.card_registered %}
+      <div class="account-note" style="border-color: var(--ok, #6fbf73);">Tienes una tarjeta registrada en Flow para esta cuenta.</div>
+    {% else %}
+      <div class="account-note">Aún no registras un método de pago. Se te pedirá al suscribirte a un plan pagado.</div>
+    {% endif %}
+  </section>
+
+  <section class="account-card">
+    <div class="account-section-head"><div class="account-section-number">03</div><div><h2 class="account-card-title">Historial de facturación</h2><p class="account-card-subtitle">Últimos cobros asociados a tu suscripción.</p></div></div>
+    {% if invoices %}
+    <table>
+      <thead>
+        <tr><th>Fecha</th><th>Plan</th><th>Monto</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td>{{ inv.created_at.strftime("%d-%m-%Y") }}</td>
+          <td>{{ inv.plan_label() }}</td>
+          <td>${{ "{:,.0f}".format(inv.amount).replace(",", ".") }}</td>
+          <td class="status-cell">
+            {% if inv.status == 'paid' %}<span class="pill ok">Pagado</span>
+            {% elif inv.status == 'failed' %}<span class="pill danger">Fallido</span>
+            {% else %}<span class="pill warn">Pendiente</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><span class="mono">—</span>Todavía no hay cobros registrados.</div>
+    {% endif %}
   </section>
 </div>
 {% endblock %}
