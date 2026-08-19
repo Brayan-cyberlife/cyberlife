@@ -14,7 +14,6 @@ from flask import (
     flash,
     Response,
     abort,
-    session,
 )
 from flask_login import (
     LoginManager,
@@ -24,8 +23,7 @@ from flask_login import (
     current_user,
 )
 
-from models import db, Company, User, Asset, Invoice, CATEGORIES, STATUSES, PLANS
-import flow_client
+from models import db, Company, User, Asset, CATEGORIES, STATUSES
 
 
 app = Flask(
@@ -35,20 +33,21 @@ app = Flask(
     static_url_path="/static",
 )
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///inventory.db"
+# Render entrega DATABASE_URL automáticamente cuando conectas el servicio
+# a PostgreSQL. En local, si no existe, seguimos usando SQLite.
+database_url = os.environ.get("DATABASE_URL", "").strip()
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+elif database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url or "sqlite:///inventory.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "cambia-esta-clave-en-produccion"
 )
 app.config["OWNER_EMAIL"] = os.environ.get("OWNER_EMAIL", "").strip().lower()
-
-# La sesión debe sobrevivir al ir y volver desde el dominio de Flow (flow.cl /
-# sandbox.flow.cl) durante el registro de tarjeta. Con el SameSite="Lax" por
-# defecto de Flask, el navegador puede no reenviar la cookie de sesión en ese
-# regreso entre dominios distintos, dejando al usuario "deslogueado" justo en
-# el momento de confirmar el pago. SameSite="None" exige Secure=True, lo cual
-# es válido porque Render sirve todo por HTTPS.
-app.config["SESSION_COOKIE_SAMESITE"] = "None"
-app.config["SESSION_COOKIE_SECURE"] = True
 
 # Inicializar SQLAlchemy y crear las tablas si todavía no existen.
 db.init_app(app)
@@ -304,15 +303,6 @@ def list_assets():
 @app.route("/assets/new", methods=["GET", "POST"])
 @login_required
 def new_asset():
-    plan_limit = current_user.company.plan_info()["asset_limit"]
-    if plan_limit is not None and assets_query().count() >= plan_limit:
-        flash(
-            f"Llegaste al límite de {plan_limit} activos de tu plan actual. "
-            "Sube de plan para agregar más.",
-            "warning",
-        )
-        return redirect(url_for("subscription"))
-
     if request.method == "POST":
         try:
             cost = float(request.form.get("cost") or 0)
@@ -655,195 +645,10 @@ def settings():
     return render_template("settings.html")
 
 
-FLOW_PLAN_IDS = {
-    "pro": os.environ.get("FLOW_PLAN_PRO", ""),
-    "business": os.environ.get("FLOW_PLAN_BUSINESS", ""),
-}
-
-
 @app.route("/cuenta/suscripcion")
 @login_required
 def subscription():
-    invoices = (
-        Invoice.query.filter_by(company_id=current_user.company_id)
-        .order_by(Invoice.created_at.desc())
-        .limit(20)
-        .all()
-    )
-    return render_template(
-        "subscription.html",
-        plans=PLANS,
-        invoices=invoices,
-        flow_configured=flow_client.is_configured(),
-    )
-
-
-@app.route("/cuenta/suscripcion/elegir/<plan_key>", methods=["POST"])
-@login_required
-def subscription_choose(plan_key):
-    if plan_key not in PLANS:
-        abort(404)
-
-    company = current_user.company
-
-    # Downgrade a Free: no requiere pasar por Flow.
-    if plan_key == "free":
-        if company.flow_subscription_id:
-            try:
-                flow_client.subscription_cancel(company.flow_subscription_id)
-            except flow_client.FlowError as exc:
-                flash(f"No se pudo cancelar la suscripción en Flow: {exc}", "warning")
-        company.plan = "free"
-        company.flow_subscription_id = None
-        company.plan_updated_at = datetime.utcnow().date()
-        db.session.commit()
-        flash("Tu cuenta volvió al plan Free.", "info")
-        return redirect(url_for("subscription"))
-
-    if not flow_client.is_configured():
-        flash(
-            "Los pagos todavía no están configurados (faltan las credenciales de Flow).",
-            "warning",
-        )
-        return redirect(url_for("subscription"))
-
-    plan_id = FLOW_PLAN_IDS.get(plan_key)
-    if not plan_id:
-        flash(
-            f'El plan "{PLANS[plan_key]["label"]}" aún no tiene un planId de Flow configurado '
-            f"(variable FLOW_PLAN_{plan_key.upper()}).",
-            "warning",
-        )
-        return redirect(url_for("subscription"))
-
-    # Recuerda qué plan estaba eligiendo, como respaldo. El dato principal para
-    # retomar el flujo va en la propia URL de retorno (ver más abajo), porque
-    # la sesión puede no sobrevivir el viaje de ida y vuelta al dominio de Flow.
-    session["pending_plan"] = plan_key
-
-    try:
-        if not company.flow_customer_id:
-            customer = flow_client.customer_create(
-                name=company.name,
-                email=current_user.email,
-                external_id=f"company-{company.id}",
-            )
-            company.flow_customer_id = customer["customerId"]
-            db.session.commit()
-
-        register = flow_client.customer_register(
-            customer_id=company.flow_customer_id,
-            url_return=url_for(
-                "subscription_register_return", plan=plan_key, _external=True
-            ),
-        )
-    except flow_client.FlowError as exc:
-        flash(f"No se pudo iniciar el registro de pago en Flow: {exc}", "danger")
-        return redirect(url_for("subscription"))
-
-    # Flow espera que el navegador del usuario sea redirigido aquí para registrar la tarjeta.
-    return redirect(f"{register['url']}?token={register['token']}")
-
-
-@app.route("/cuenta/suscripcion/registro/retorno", methods=["GET", "POST"])
-def subscription_register_return():
-    # OJO: esta ruta NO usa @login_required a propósito. Flow redirige (o hace
-    # POST) de vuelta desde su propio dominio, y esa navegación entre sitios
-    # puede llegar sin la cookie de sesión del usuario. Por eso identificamos
-    # la empresa a través del propio token de Flow, no de current_user.
-    token = request.values.get("token")
-    plan_key = request.args.get("plan") or session.pop("pending_plan", None)
-
-    if not token or plan_key not in PLANS:
-        flash("No se pudo confirmar el registro de pago.", "danger")
-        return redirect(url_for("subscription"))
-
-    try:
-        status = flow_client.customer_get_register_status(token)
-    except flow_client.FlowError as exc:
-        flash(f"No se pudo verificar el registro en Flow: {exc}", "danger")
-        return redirect(url_for("subscription"))
-
-    customer_id = status.get("customerId")
-    company = Company.query.filter_by(flow_customer_id=customer_id).first()
-    if not company:
-        flash(
-            "No se pudo emparejar el registro de Flow con tu empresa. "
-            "Si ya ves la tarjeta en Flow, contacta a soporte.",
-            "danger",
-        )
-        return redirect(url_for("subscription"))
-
-    if status.get("status") != 1:  # 1 = tarjeta registrada correctamente
-        flash("El registro de la tarjeta no se completó. Intenta nuevamente.", "warning")
-        return redirect(url_for("subscription"))
-
-    company.card_registered = True
-    plan_id = FLOW_PLAN_IDS.get(plan_key)
-
-    try:
-        sub = flow_client.subscription_create(
-            plan_id=plan_id, customer_id=company.flow_customer_id
-        )
-        company.flow_subscription_id = sub.get("subscriptionId")
-        company.plan = plan_key
-        company.plan_updated_at = datetime.utcnow().date()
-
-        db.session.add(Invoice(
-            company_id=company.id,
-            plan=plan_key,
-            amount=PLANS[plan_key]["price"],
-            status="pending",
-            flow_token=token,
-        ))
-        db.session.commit()
-        flash(f'Tarjeta registrada. Tu plan ahora es "{PLANS[plan_key]["label"]}".', "success")
-    except flow_client.FlowError as exc:
-        db.session.commit()
-        flash(
-            f"La tarjeta quedó registrada, pero no se pudo activar la suscripción: {exc}",
-            "danger",
-        )
-
-    return redirect(url_for("subscription"))
-
-
-@app.route("/cuenta/suscripcion/webhook", methods=["POST"])
-def subscription_webhook():
-    """Flow llama a esta URL (urlConfirmation) para notificar cada cobro
-    recurrente de una suscripción. NOTA: verifica los nombres de campo
-    exactos del payload (customerId, status, amount) contra la respuesta
-    real de tu cuenta sandbox antes de pasar a producción — la doc pública
-    no deja 100% explícito el payload de cobros recurrentes."""
-    token = request.form.get("token")
-    if not token:
-        return "falta token", 400
-
-    try:
-        payment = flow_client.payment_get_status(token)
-    except flow_client.FlowError:
-        return "error", 400
-
-    customer_id = payment.get("customerId") or payment.get("customer")
-    company = (
-        Company.query.filter_by(flow_customer_id=customer_id).first()
-        if customer_id else None
-    )
-
-    if company:
-        paid = payment.get("status") == 2  # 2 = pagada según doc de Flow
-        db.session.add(Invoice(
-            company_id=company.id,
-            plan=company.plan,
-            amount=payment.get("amount", 0),
-            status="paid" if paid else "failed",
-            flow_order=str(payment.get("commerceOrder", "")),
-            flow_token=token,
-            paid_at=datetime.utcnow() if paid else None,
-        ))
-        db.session.commit()
-
-    return "OK", 200
+    return render_template("subscription.html")
 
 
 # ============================================================
