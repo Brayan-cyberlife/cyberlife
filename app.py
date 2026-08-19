@@ -41,6 +41,15 @@ app.config["SECRET_KEY"] = os.environ.get(
 )
 app.config["OWNER_EMAIL"] = os.environ.get("OWNER_EMAIL", "").strip().lower()
 
+# La sesión debe sobrevivir al ir y volver desde el dominio de Flow (flow.cl /
+# sandbox.flow.cl) durante el registro de tarjeta. Con el SameSite="Lax" por
+# defecto de Flask, el navegador puede no reenviar la cookie de sesión en ese
+# regreso entre dominios distintos, dejando al usuario "deslogueado" justo en
+# el momento de confirmar el pago. SameSite="None" exige Secure=True, lo cual
+# es válido porque Render sirve todo por HTTPS.
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_SECURE"] = True
+
 # Inicializar SQLAlchemy y crear las tablas si todavía no existen.
 db.init_app(app)
 with app.app_context():
@@ -707,7 +716,9 @@ def subscription_choose(plan_key):
         )
         return redirect(url_for("subscription"))
 
-    # Recuerda qué plan estaba eligiendo para retomarlo cuando Flow confirme el registro.
+    # Recuerda qué plan estaba eligiendo, como respaldo. El dato principal para
+    # retomar el flujo va en la propia URL de retorno (ver más abajo), porque
+    # la sesión puede no sobrevivir el viaje de ida y vuelta al dominio de Flow.
     session["pending_plan"] = plan_key
 
     try:
@@ -722,7 +733,9 @@ def subscription_choose(plan_key):
 
         register = flow_client.customer_register(
             customer_id=company.flow_customer_id,
-            url_return=url_for("subscription_register_return", _external=True),
+            url_return=url_for(
+                "subscription_register_return", plan=plan_key, _external=True
+            ),
         )
     except flow_client.FlowError as exc:
         flash(f"No se pudo iniciar el registro de pago en Flow: {exc}", "danger")
@@ -733,11 +746,13 @@ def subscription_choose(plan_key):
 
 
 @app.route("/cuenta/suscripcion/registro/retorno", methods=["GET", "POST"])
-@login_required
 def subscription_register_return():
+    # OJO: esta ruta NO usa @login_required a propósito. Flow redirige (o hace
+    # POST) de vuelta desde su propio dominio, y esa navegación entre sitios
+    # puede llegar sin la cookie de sesión del usuario. Por eso identificamos
+    # la empresa a través del propio token de Flow, no de current_user.
     token = request.values.get("token")
-    plan_key = session.pop("pending_plan", None)
-    company = current_user.company
+    plan_key = request.args.get("plan") or session.pop("pending_plan", None)
 
     if not token or plan_key not in PLANS:
         flash("No se pudo confirmar el registro de pago.", "danger")
@@ -747,6 +762,16 @@ def subscription_register_return():
         status = flow_client.customer_get_register_status(token)
     except flow_client.FlowError as exc:
         flash(f"No se pudo verificar el registro en Flow: {exc}", "danger")
+        return redirect(url_for("subscription"))
+
+    customer_id = status.get("customerId")
+    company = Company.query.filter_by(flow_customer_id=customer_id).first()
+    if not company:
+        flash(
+            "No se pudo emparejar el registro de Flow con tu empresa. "
+            "Si ya ves la tarjeta en Flow, contacta a soporte.",
+            "danger",
+        )
         return redirect(url_for("subscription"))
 
     if status.get("status") != 1:  # 1 = tarjeta registrada correctamente
