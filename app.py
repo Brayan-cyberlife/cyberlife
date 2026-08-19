@@ -33,17 +33,22 @@ app = Flask(
     static_url_path="/static",
 )
 
-# Render entrega DATABASE_URL automáticamente cuando conectas el servicio
-# a PostgreSQL. En local, si no existe, seguimos usando SQLite.
+# Base de datos: en Render usamos PostgreSQL mediante DATABASE_URL.
+# En local, si DATABASE_URL no existe, se mantiene SQLite como respaldo.
 database_url = os.environ.get("DATABASE_URL", "").strip()
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
-elif database_url.startswith("postgresql://"):
-    database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+if database_url:
+    # Render puede entregar postgres:// o postgresql://;
+    # forzamos el driver Psycopg 3 para evitar que SQLAlchemy intente
+    # cargar el antiguo psycopg2.
+    database_url = re.sub(r"^postgres(?:ql)?://", "postgresql+psycopg://", database_url)
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///inventory.db"
 
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url or "sqlite:///inventory.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "cambia-esta-clave-en-produccion"
 )
