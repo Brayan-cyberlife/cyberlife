@@ -650,10 +650,61 @@ def settings():
     return render_template("settings.html")
 
 
+# ============================================================
+# SUSCRIPCIÓN
+# ============================================================
+
+# Catálogo visual de planes.
+# La integración de pagos con Flow todavía no está conectada al modelo
+# de datos, así que esta pantalla no depende de campos que aún no existen
+# en Company (como plan o card_registered) ni de un modelo Invoice.
+PLANS = {
+    "free": {
+        "label": "Free",
+        "price": 0,
+        "features": [
+            "Gestión básica de activos",
+            "Panel de inventario",
+            "Exportación CSV",
+        ],
+    },
+    "business": {
+        "label": "Business",
+        "price": None,
+        "features": [
+            "Todas las funciones de Free",
+            "Funciones avanzadas para equipos",
+            "Soporte prioritario",
+        ],
+    },
+    "pro": {
+        "label": "Pro",
+        "price": None,
+        "features": [
+            "Todas las funciones de Business",
+            "Funciones avanzadas y mayor capacidad",
+            "Soporte preferente",
+        ],
+    },
+}
+
+
 @app.route("/cuenta/suscripcion")
 @login_required
 def subscription():
-    return render_template("subscription.html")
+    # Estado seguro hasta implementar persistencia de suscripciones y Flow.
+    current_plan_key = "free"
+    current_plan = PLANS[current_plan_key]
+
+    return render_template(
+        "subscription.html",
+        plans=PLANS,
+        current_plan=current_plan,
+        current_plan_key=current_plan_key,
+        flow_configured=False,
+        card_registered=False,
+        invoices=[],
+    )
 
 
 # ============================================================
