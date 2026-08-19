@@ -2,6 +2,10 @@ import csv
 import io
 import os
 import re
+import hmac
+import hashlib
+import requests
+from urllib.parse import urlencode
 from functools import wraps
 from datetime import datetime
 
@@ -23,7 +27,7 @@ from flask_login import (
     current_user,
 )
 
-from models import db, Company, User, Asset, CATEGORIES, STATUSES
+from models import db, Company, User, Asset, FlowSubscription, Invoice, CATEGORIES, STATUSES
 
 
 app = Flask(
@@ -53,6 +57,75 @@ app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "cambia-esta-clave-en-produccion"
 )
 app.config["OWNER_EMAIL"] = os.environ.get("OWNER_EMAIL", "").strip().lower()
+
+# ============================================================
+# FLOW — SUSCRIPCIONES
+# ============================================================
+FLOW_API_KEY = os.environ.get("FLOW_API_KEY", "").strip()
+FLOW_SECRET_KEY = os.environ.get("FLOW_SECRET_KEY", "").strip()
+FLOW_PLAN_BUSINESS = os.environ.get("FLOW_PLAN_BUSINESS", "").strip()
+FLOW_PLAN_PRO = os.environ.get("FLOW_PLAN_PRO", "").strip()
+FLOW_BASE_URL = os.environ.get("FLOW_BASE_URL", "https://www.flow.cl/api").strip().rstrip("/")
+
+# Precios son solo visuales; el monto real de la suscripción lo define el plan en Flow.
+try:
+    FLOW_PRICE_BUSINESS = float(os.environ.get("FLOW_PRICE_BUSINESS", "0") or 0) or None
+except ValueError:
+    FLOW_PRICE_BUSINESS = None
+try:
+    FLOW_PRICE_PRO = float(os.environ.get("FLOW_PRICE_PRO", "0") or 0) or None
+except ValueError:
+    FLOW_PRICE_PRO = None
+
+
+def flow_configured():
+    return bool(FLOW_API_KEY and FLOW_SECRET_KEY and FLOW_PLAN_BUSINESS and FLOW_PLAN_PRO)
+
+
+def flow_signature(params):
+    """Firma Flow: parámetros ordenados alfabéticamente + HMAC-SHA256."""
+    keys = sorted(k for k in params if k != "s")
+    payload = "".join(f"{k}{params[k]}" for k in keys)
+    return hmac.new(FLOW_SECRET_KEY.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def flow_request(method, path, params=None):
+    if not flow_configured():
+        raise RuntimeError("Las credenciales de Flow no están configuradas.")
+    params = dict(params or {})
+    params["apiKey"] = FLOW_API_KEY
+    params["s"] = flow_signature(params)
+    url = f"{FLOW_BASE_URL}{path}"
+    if method.upper() == "GET":
+        response = requests.get(url, params=params, timeout=20)
+    else:
+        response = requests.post(url, data=params, timeout=20)
+    response.raise_for_status()
+    data = response.json()
+    if isinstance(data, dict) and data.get("code") and data.get("code") not in ("200", 200):
+        raise RuntimeError(data.get("message") or "Flow rechazó la solicitud.")
+    return data
+
+
+def flow_error_message(exc):
+    text = str(exc)
+    return text[:500] if text else "Error desconocido al comunicarse con Flow."
+
+
+PLANS = {
+    "free": {
+        "label": "Free", "price": 0, "flow_plan_id": None,
+        "features": ["Gestión básica de activos", "Panel de inventario", "Exportación CSV"],
+    },
+    "business": {
+        "label": "Business", "price": FLOW_PRICE_BUSINESS, "flow_plan_id": FLOW_PLAN_BUSINESS,
+        "features": ["Todas las funciones de Free", "Funciones avanzadas para equipos", "Soporte prioritario"],
+    },
+    "pro": {
+        "label": "Pro", "price": FLOW_PRICE_PRO, "flow_plan_id": FLOW_PLAN_PRO,
+        "features": ["Todas las funciones de Business", "Funciones avanzadas y mayor capacidad", "Soporte preferente"],
+    },
+}
 
 # Inicializar SQLAlchemy y crear las tablas si todavía no existen.
 db.init_app(app)
@@ -651,60 +724,177 @@ def settings():
 
 
 # ============================================================
-# SUSCRIPCIÓN
+# SUSCRIPCIÓN + FLOW
 # ============================================================
 
-# Catálogo visual de planes.
-# La integración de pagos con Flow todavía no está conectada al modelo
-# de datos, así que esta pantalla no depende de campos que aún no existen
-# en Company (como plan o card_registered) ni de un modelo Invoice.
-PLANS = {
-    "free": {
-        "label": "Free",
-        "price": 0,
-        "features": [
-            "Gestión básica de activos",
-            "Panel de inventario",
-            "Exportación CSV",
-        ],
-    },
-    "business": {
-        "label": "Business",
-        "price": None,
-        "features": [
-            "Todas las funciones de Free",
-            "Funciones avanzadas para equipos",
-            "Soporte prioritario",
-        ],
-    },
-    "pro": {
-        "label": "Pro",
-        "price": None,
-        "features": [
-            "Todas las funciones de Business",
-            "Funciones avanzadas y mayor capacidad",
-            "Soporte preferente",
-        ],
-    },
-}
+def get_flow_subscription(company):
+    return FlowSubscription.query.filter_by(company_id=company.id).first()
+
+
+def ensure_flow_customer(company, user):
+    record = get_flow_subscription(company)
+    if record and record.customer_id:
+        return record
+
+    data = flow_request("POST", "/customer/create", {
+        "name": user.name,
+        "email": user.email,
+        "externalId": f"cyberlife-company-{company.id}",
+    })
+    customer_id = data.get("customerId")
+    if not customer_id:
+        raise RuntimeError("Flow no devolvió customerId al crear el cliente.")
+
+    if not record:
+        record = FlowSubscription(company_id=company.id)
+        db.session.add(record)
+    record.customer_id = customer_id
+    db.session.commit()
+    return record
+
+
+def create_flow_subscription(record, plan_key):
+    plan = PLANS[plan_key]
+    if not plan["flow_plan_id"]:
+        raise RuntimeError("El plan seleccionado no tiene un plan asociado en Flow.")
+    data = flow_request("POST", "/subscription/create", {
+        "planId": plan["flow_plan_id"],
+        "customerId": record.customer_id,
+    })
+    subscription_id = data.get("subscriptionId")
+    if not subscription_id:
+        raise RuntimeError("Flow no devolvió subscriptionId al crear la suscripción.")
+    record.plan_key = plan_key
+    record.subscription_id = subscription_id
+    record.card_registered = True
+    record.pending_plan_key = None
+    db.session.commit()
+    return data
 
 
 @app.route("/cuenta/suscripcion")
 @login_required
 def subscription():
-    # Estado seguro hasta implementar persistencia de suscripciones y Flow.
-    current_plan_key = "free"
+    record = get_flow_subscription(current_user.company)
+    current_plan_key = record.plan_key if record and record.plan_key in PLANS else "free"
     current_plan = PLANS[current_plan_key]
-
+    invoices = Invoice.query.filter_by(company_id=current_user.company_id).order_by(Invoice.created_at.desc()).limit(20).all()
     return render_template(
         "subscription.html",
         plans=PLANS,
         current_plan=current_plan,
         current_plan_key=current_plan_key,
-        flow_configured=False,
-        card_registered=False,
-        invoices=[],
+        flow_configured=flow_configured(),
+        card_registered=bool(record and record.card_registered),
+        invoices=invoices,
+        flow_environment="sandbox" if "sandbox.flow.cl" in FLOW_BASE_URL else "production",
     )
+
+
+@app.route("/cuenta/suscripcion/choose/<plan_key>", methods=["POST"])
+@login_required
+def subscription_choose(plan_key):
+    if plan_key not in PLANS:
+        abort(404)
+
+    if plan_key == "free":
+        flash("El plan Free se mantiene disponible. Para cancelar una suscripción pagada, gestionaremos la baja en Flow en una próxima etapa.", "info")
+        return redirect(url_for("subscription"))
+
+    if not flow_configured():
+        flash("Flow todavía no está configurado en este ambiente. Revisa FLOW_API_KEY, FLOW_SECRET_KEY, FLOW_PLAN_BUSINESS y FLOW_PLAN_PRO.", "warning")
+        return redirect(url_for("subscription"))
+
+    company = current_user.company
+    try:
+        record = ensure_flow_customer(company, current_user)
+        if record.card_registered and record.customer_id:
+            create_flow_subscription(record, plan_key)
+            flash(f"Suscripción {PLANS[plan_key]['label']} creada correctamente en Flow.", "success")
+            return redirect(url_for("subscription"))
+
+        record.pending_plan_key = plan_key
+        db.session.commit()
+        callback = url_for("flow_card_callback", _external=True)
+        data = flow_request("POST", "/customer/register", {
+            "customerId": record.customer_id,
+            "url_return": callback,
+        })
+        flow_url = data.get("url")
+        token = data.get("token")
+        if not flow_url or not token:
+            raise RuntimeError("Flow no devolvió la URL/token para registrar la tarjeta.")
+        return redirect(f"{flow_url}?{urlencode({'token': token})}")
+    except Exception as exc:
+        db.session.rollback()
+        flash(f"No fue posible iniciar la suscripción con Flow: {flow_error_message(exc)}", "danger")
+        return redirect(url_for("subscription"))
+
+
+@app.route("/flow/card-callback", methods=["POST", "GET"])
+def flow_card_callback():
+    token = request.values.get("token", "").strip()
+    if not token:
+        return redirect(url_for("subscription"))
+
+    try:
+        data = flow_request("GET", "/customer/getRegisterStatus", {"token": token})
+        customer_id = data.get("customerId")
+        status = str(data.get("status", "0"))
+        if status != "1" or not customer_id:
+            flash("Flow no confirmó el registro de la tarjeta. Puedes intentarlo nuevamente.", "warning")
+            return redirect(url_for("subscription"))
+
+        record = FlowSubscription.query.filter_by(customer_id=customer_id).first()
+        if not record:
+            flash("No encontramos la cuenta Cyber Life asociada al registro de Flow.", "danger")
+            return redirect(url_for("login"))
+
+        record.card_registered = True
+        record.card_brand = data.get("creditCardType")
+        record.card_last4 = data.get("last4CardDigits")
+        plan_key = record.pending_plan_key
+        record.pending_plan_key = None
+        db.session.commit()
+
+        if plan_key in ("business", "pro"):
+            create_flow_subscription(record, plan_key)
+            flash(f"Tarjeta registrada y plan {PLANS[plan_key]['label']} activado correctamente.", "success")
+        else:
+            flash("Tarjeta registrada correctamente en Flow.", "success")
+    except Exception as exc:
+        db.session.rollback()
+        flash(f"Flow confirmó el registro, pero Cyber Life no pudo finalizar la suscripción: {flow_error_message(exc)}", "danger")
+    return redirect(url_for("subscription"))
+
+
+@app.route("/flow/payment-callback", methods=["POST"])
+def flow_payment_callback():
+    """Callback de pagos recurrentes. Flow envía un token; luego consultamos payment/getStatus."""
+    token = request.form.get("token", "").strip()
+    if not token:
+        return "OK", 200
+    try:
+        data = flow_request("GET", "/payment/getStatus", {"token": token})
+        commerce_order = str(data.get("commerceOrder", ""))
+        status = str(data.get("status", ""))
+        # Flow recomienda usar commerceOrder para relacionar el cobro con la suscripción/importe.
+        subscription_id = commerce_order.split("-")[0] if commerce_order else ""
+        record = FlowSubscription.query.filter_by(subscription_id=subscription_id).first() if subscription_id else None
+        if record:
+            inv = Invoice(
+                company_id=record.company_id,
+                subscription_id=record.subscription_id,
+                flow_order=str(data.get("flowOrder", "")) or None,
+                amount=float(data.get("amount") or 0),
+                status="paid" if status == "1" else "failed",
+                commerce_order=commerce_order,
+            )
+            db.session.add(inv)
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+    return "OK", 200
 
 
 # ============================================================

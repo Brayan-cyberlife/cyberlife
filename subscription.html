@@ -15,6 +15,11 @@
   Los pagos aún no están configurados en este ambiente (faltan las credenciales de Flow). Puedes ver los planes, pero los botones de suscripción no funcionarán todavía.
 </div>
 {% endif %}
+{% if flow_configured %}
+<div class="account-note" style="margin-bottom:20px; border-color: var(--ok, #6fbf73);">
+  Flow está conectado en modo {{ flow_environment }}. Los planes Business y Pro usan los planId configurados en Render.
+</div>
+{% endif %}
 
 <div class="subscription-layout">
   <section class="subscription-hero account-card">
@@ -40,7 +45,11 @@
         {% if key == current_plan_key %}
           <button class="btn btn-ghost" disabled style="width:100%;">Plan actual</button>
         {% else %}
-          <button class="btn btn-ghost" type="button" disabled style="width:100%;">Pago próximamente</button>
+          <form method="post" action="{{ url_for('subscription_choose', plan_key=key) }}">
+            <button class="btn" type="submit" style="width:100%;">
+              Suscribirme a {{ plan.label }}
+            </button>
+          </form>
         {% endif %}
       </div>
       {% endfor %}
@@ -52,7 +61,7 @@
     {% if card_registered %}
       <div class="account-note" style="border-color: var(--ok, #6fbf73);">Tienes una tarjeta registrada en Flow para esta cuenta.</div>
     {% else %}
-      <div class="account-note">Todavía no hay un método de pago registrado. La integración de pagos se habilitará cuando conectemos Flow al sistema de suscripciones.</div>
+      <div class="account-note">Aún no registras un método de pago. Al elegir Business o Pro serás enviado a Flow para registrar tu tarjeta de forma segura.</div>
     {% endif %}
   </section>
 

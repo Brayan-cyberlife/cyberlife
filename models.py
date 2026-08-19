@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,7 +14,6 @@ class Company(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
-    rut = db.Column(db.String(20), unique=True, nullable=False)
     created_at = db.Column(db.Date, default=date.today)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
@@ -38,6 +37,44 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class FlowSubscription(db.Model):
+    __tablename__ = "flow_subscriptions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), unique=True, nullable=False)
+    customer_id = db.Column(db.String(100), unique=True)
+    subscription_id = db.Column(db.String(100), unique=True)
+    plan_key = db.Column(db.String(30), default="free", nullable=False)
+    pending_plan_key = db.Column(db.String(30))
+    card_registered = db.Column(db.Boolean, default=False, nullable=False)
+    card_brand = db.Column(db.String(30))
+    card_last4 = db.Column(db.String(4))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    company = db.relationship("Company", backref=db.backref("flow_subscription", uselist=False))
+
+
+class Invoice(db.Model):
+    __tablename__ = "invoices"
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=False)
+    subscription_id = db.Column(db.String(100))
+    flow_order = db.Column(db.String(100), unique=True)
+    commerce_order = db.Column(db.String(255))
+    amount = db.Column(db.Float, default=0.0, nullable=False)
+    status = db.Column(db.String(30), default="pending", nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    company = db.relationship("Company", backref="invoices")
+
+    def plan_label(self):
+        labels = {"free": "Free", "business": "Business", "pro": "Pro"}
+        sub = FlowSubscription.query.filter_by(company_id=self.company_id).first()
+        return labels.get(sub.plan_key if sub else "free", "Free")
 
 
 class Asset(db.Model):
