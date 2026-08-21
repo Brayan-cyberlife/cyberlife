@@ -174,6 +174,10 @@ with app.app_context():
         column_additions = [
             ("users", "reset_token", "VARCHAR(100)"),
             ("users", "reset_token_expires", "TIMESTAMP"),
+            # La versión actual de models.py usa companies.rut y las rutas
+            # /registro y /admin/empresas/nueva lo consultan/guardan.
+            # ADD COLUMN IF NOT EXISTS hace la migración segura en Render.
+            ("companies", "rut", "VARCHAR(20)"),
         ]
         try:
             with db.engine.connect() as conn:
@@ -185,6 +189,14 @@ with app.app_context():
                     text(
                         "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_reset_token "
                         "ON users (reset_token) WHERE reset_token IS NOT NULL"
+                    )
+                )
+                # Mantener unicidad del RUT sin impedir la migración de filas
+                # antiguas que todavía no tienen RUT (NULL).
+                conn.execute(
+                    text(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS ix_companies_rut "
+                        "ON companies (rut) WHERE rut IS NOT NULL"
                     )
                 )
                 conn.commit()

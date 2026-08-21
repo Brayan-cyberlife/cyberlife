@@ -14,6 +14,10 @@ class Company(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
+    # RUT tributario de la empresa. Se guarda formateado (XX.XXX.XXX-X).
+    # Es nullable para permitir la migración segura de empresas creadas antes
+    # de que este campo existiera. Las nuevas empresas sí lo reciben desde /registro.
+    rut = db.Column(db.String(20), unique=True, nullable=True)
     created_at = db.Column(db.Date, default=date.today)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
