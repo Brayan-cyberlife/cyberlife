@@ -163,6 +163,34 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+    # db.create_all() NO agrega columnas nuevas a tablas que ya existen —
+    # solo crea tablas que faltan por completo. Como Postgres persiste entre
+    # deploys (a diferencia del SQLite anterior, que se recreaba solo), cada
+    # vez que se agrega una columna a un modelo hay que sumarla acá también,
+    # o el INSERT/UPDATE falla con "column ... does not exist" (500).
+    if database_url:  # esta migración liviana solo aplica a Postgres
+        from sqlalchemy import text
+
+        column_additions = [
+            ("users", "reset_token", "VARCHAR(100)"),
+            ("users", "reset_token_expires", "TIMESTAMP"),
+        ]
+        try:
+            with db.engine.connect() as conn:
+                for table, column, coltype in column_additions:
+                    conn.execute(
+                        text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {column} {coltype}")
+                    )
+                conn.execute(
+                    text(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_reset_token "
+                        "ON users (reset_token) WHERE reset_token IS NOT NULL"
+                    )
+                )
+                conn.commit()
+        except Exception as exc:
+            app.logger.warning(f"No se pudo verificar/migrar columnas nuevas: {exc}")
+
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
