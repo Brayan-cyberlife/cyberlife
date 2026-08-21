@@ -32,6 +32,10 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), default="admin")  # admin | tecnico
     is_super_admin = db.Column(db.Boolean, default=False, nullable=False)
 
+    # Recuperación de contraseña
+    reset_token = db.Column(db.String(100), unique=True)
+    reset_token_expires = db.Column(db.DateTime)
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 

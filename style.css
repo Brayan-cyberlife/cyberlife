@@ -1510,3 +1510,25 @@ html { min-width: 0; }
 
 .plan-card .btn,
 .plan-card .btn-ghost { margin-top: auto; }
+
+/* ============================================================
+   Recuperar / restablecer contraseña
+   ============================================================ */
+.auth-field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.auth-forgot-link {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.auth-forgot-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}

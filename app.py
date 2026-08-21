@@ -4,10 +4,13 @@ import os
 import re
 import hmac
 import hashlib
+import secrets
+import smtplib
+from email.mime.text import MIMEText
 import requests
 from urllib.parse import urlencode
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import (
     Flask,
@@ -57,6 +60,34 @@ app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "cambia-esta-clave-en-produccion"
 )
 app.config["OWNER_EMAIL"] = os.environ.get("OWNER_EMAIL", "").strip().lower()
+
+# Envío de correo (recuperación de contraseña). Funciona con cualquier SMTP
+# estándar — por ejemplo el Google Workspace de cyberlife.cl con una
+# "contraseña de aplicación" generada desde la cuenta de Google.
+app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", "587"))
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "")
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get(
+    "MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"]
+)
+
+
+def mail_configured():
+    return bool(app.config["MAIL_USERNAME"] and app.config["MAIL_PASSWORD"])
+
+
+def send_email(to, subject, body):
+    if not mail_configured():
+        raise RuntimeError("El envío de correo no está configurado (faltan MAIL_USERNAME/MAIL_PASSWORD).")
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"] = app.config["MAIL_DEFAULT_SENDER"]
+    msg["To"] = to
+    with smtplib.SMTP(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]) as server:
+        server.starttls()
+        server.login(app.config["MAIL_USERNAME"], app.config["MAIL_PASSWORD"])
+        server.sendmail(app.config["MAIL_DEFAULT_SENDER"], [to], msg.as_string())
 
 # ============================================================
 # FLOW — SUSCRIPCIONES
@@ -114,16 +145,16 @@ def flow_error_message(exc):
 
 PLANS = {
     "free": {
-        "label": "Free", "price": 0, "flow_plan_id": None,
-        "features": ["Gestión básica de activos", "Panel de inventario", "Exportación CSV"],
+        "label": "Free", "price": 0, "flow_plan_id": None, "asset_limit": 10,
+        "features": ["Hasta 10 activos", "Panel de inventario", "Exportación CSV"],
     },
     "business": {
-        "label": "Business", "price": FLOW_PRICE_BUSINESS, "flow_plan_id": FLOW_PLAN_BUSINESS,
-        "features": ["Todas las funciones de Free", "Funciones avanzadas para equipos", "Soporte prioritario"],
+        "label": "Business", "price": FLOW_PRICE_BUSINESS, "flow_plan_id": FLOW_PLAN_BUSINESS, "asset_limit": None,
+        "features": ["Activos ilimitados", "Funciones avanzadas para equipos", "Soporte prioritario"],
     },
     "pro": {
-        "label": "Pro", "price": FLOW_PRICE_PRO, "flow_plan_id": FLOW_PLAN_PRO,
-        "features": ["Todas las funciones de Business", "Funciones avanzadas y mayor capacidad", "Soporte preferente"],
+        "label": "Pro", "price": FLOW_PRICE_PRO, "flow_plan_id": FLOW_PLAN_PRO, "asset_limit": 20,
+        "features": ["Hasta 20 activos", "Funciones avanzadas y mayor capacidad", "Soporte preferente"],
     },
 }
 
@@ -300,6 +331,76 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/recuperar", methods=["GET", "POST"])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        user = User.query.filter_by(email=email).first()
+
+        # Mismo mensaje exista o no el correo, para no revelar qué cuentas existen.
+        generic_msg = "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña."
+
+        if user:
+            user.reset_token = secrets.token_urlsafe(32)
+            user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+
+            reset_url = url_for("reset_password", token=user.reset_token, _external=True)
+            body = (
+                f"Hola {user.name},\n\n"
+                "Recibimos una solicitud para restablecer tu contraseña en Cyber Life.\n"
+                f"Si fuiste tú, entra a este enlace (válido por 1 hora):\n{reset_url}\n\n"
+                "Si no fuiste tú, puedes ignorar este correo.\n"
+            )
+            try:
+                send_email(user.email, "Restablecer tu contraseña · Cyber Life", body)
+            except Exception:
+                # No revelamos el error de envío al usuario para no filtrar
+                # si el correo existe o no; queda registrado igual el token.
+                pass
+
+        flash(generic_msg, "success")
+        return redirect(url_for("login"))
+
+    return render_template("forgot_password.html")
+
+
+@app.route("/restablecer/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard"))
+
+    user = User.query.filter_by(reset_token=token).first()
+    if not user or not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+        flash("El enlace de recuperación no es válido o ya venció. Solicita uno nuevo.", "danger")
+        return redirect(url_for("forgot_password"))
+
+    if request.method == "POST":
+        password = request.form.get("password", "")
+        password_confirm = request.form.get("password_confirm", "")
+
+        if len(password) < 6:
+            flash("La contraseña debe tener al menos 6 caracteres.", "danger")
+            return render_template("reset_password.html", token=token)
+
+        if password != password_confirm:
+            flash("Las contraseñas no coinciden.", "danger")
+            return render_template("reset_password.html", token=token)
+
+        user.set_password(password)
+        user.reset_token = None
+        user.reset_token_expires = None
+        db.session.commit()
+
+        flash("Contraseña actualizada. Ya puedes iniciar sesión.", "success")
+        return redirect(url_for("login"))
+
+    return render_template("reset_password.html", token=token)
+
+
 # ============================================================
 # PANEL PRINCIPAL
 # ============================================================
@@ -381,6 +482,19 @@ def list_assets():
 @app.route("/assets/new", methods=["GET", "POST"])
 @login_required
 def new_asset():
+    record = get_flow_subscription(current_user.company)
+    plan_key = record.plan_key if record and record.plan_key in PLANS else "free"
+    asset_limit = PLANS[plan_key]["asset_limit"]
+    if asset_limit is not None:
+        current_count = Asset.query.filter_by(company_id=current_user.company_id).count()
+        if current_count >= asset_limit:
+            flash(
+                f"Llegaste al límite de {asset_limit} activos del plan {PLANS[plan_key]['label']}. "
+                "Sube de plan para agregar más.",
+                "warning",
+            )
+            return redirect(url_for("subscription"))
+
     if request.method == "POST":
         try:
             cost = float(request.form.get("cost") or 0)

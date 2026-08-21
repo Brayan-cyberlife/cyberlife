@@ -10,15 +10,23 @@ services:
         value: 3.12.0
       - key: SECRET_KEY
         sync: false
+      - key: DATABASE_URL
+        sync: false
       - key: OWNER_EMAIL
         sync: false
       - key: FLOW_API_KEY
         sync: false
       - key: FLOW_SECRET_KEY
         sync: false
-      - key: FLOW_API_URL
+      - key: FLOW_BASE_URL
         value: https://sandbox.flow.cl/api
       - key: FLOW_PLAN_PRO
         sync: false
       - key: FLOW_PLAN_BUSINESS
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_DEFAULT_SENDER
         sync: false
